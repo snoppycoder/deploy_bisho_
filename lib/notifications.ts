@@ -9,14 +9,14 @@ interface NotificationPayload {
 
 export const sendNotification = async (payload: NotificationPayload) => {
 	try {
-		await prisma.notification.create({
-			data: {
-				userId: payload.userId,
-				title: payload.title,
-				message: payload.message,
-				type: payload.type,
-			},
-		});
+		// await prisma.notification.create({
+		// 	data: {
+		// 		userId: payload.userId,
+		// 		title: payload.title,
+		// 		message: payload.message,
+		// 		type: payload.type,
+		// 	},
+		// });
 	} catch (error) {
 		console.error("Error sending notification:", error);
 	}
