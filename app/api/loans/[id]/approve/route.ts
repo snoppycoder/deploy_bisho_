@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { LoanApprovalLog } from "@prisma/client";
 import { getSession } from "@/lib/auth";
 import { sendNotification } from "@/lib/notifications";
 
@@ -32,11 +33,11 @@ export async function POST(
 				approvalLogs: {
 					create: {
 						approvedByUserId: session.id,
-						role: session.role,
+						role: session.role as LoanApprovalLog["role"],
 						status,
 						approvalOrder: 1, // This should be determined based on the approval workflow
 						comments,
-					},
+					} as any,
 				},
 			},
 		});

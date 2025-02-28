@@ -59,10 +59,9 @@ export default function LoansListPage() {
 		fetchLoans();
 	}, [fetchLoans]);
 
-	const filteredLoans = loans.filter(
-		(loan) =>
-			loan.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-			loan.status.toLowerCase().includes(searchTerm.toLowerCase())
+	const filteredLoans = loans.filter((loan) =>
+		// loan.memberName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+		loan.status.toLowerCase().includes(searchTerm.toLowerCase())
 	);
 
 	const getStatusColor = (status: string) => {
@@ -116,7 +115,7 @@ export default function LoansListPage() {
 							<TableRow key={loan.id}>
 								<TableCell>{loan.id}</TableCell>
 								<TableCell>{loan.memberName}</TableCell>
-								<TableCell>${loan.amount.toFixed(2)}</TableCell>
+								<TableCell>${Number(loan.amount).toFixed(2)}</TableCell>
 								<TableCell>{loan.interestRate}%</TableCell>
 								<TableCell>{loan.tenureMonths}</TableCell>
 								<TableCell>

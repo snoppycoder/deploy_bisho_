@@ -1,8 +1,7 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { UserRole } from "@prisma/client";
@@ -18,6 +17,13 @@ import {
 	Users,
 	X,
 	UserPlus,
+	CheckCircle,
+	DollarSign,
+	FileSearch,
+	History,
+	Calculator,
+	Upload,
+	ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth-provider";
@@ -76,8 +82,41 @@ export function DashboardShell({ children }: DashboardShellProps) {
 		},
 		{
 			title: "Loans",
-			href: "/dashboard/loans",
+			href: "/dashboard/loans/details",
 			icon: CreditCard,
+			roles: [
+				UserRole.LOAN_OFFICER,
+				UserRole.BRANCH_MANAGER,
+				UserRole.REGIONAL_MANAGER,
+				UserRole.FINANCE_ADMIN,
+			],
+		},
+		// {
+		// 	title: "Manage Loans",
+		// 	href: "/dashboard/loans/manage",
+		// 	icon: CreditCard,
+		// 	roles: [
+		// 		UserRole.LOAN_OFFICER,
+		// 		UserRole.BRANCH_MANAGER,
+		// 		UserRole.REGIONAL_MANAGER,
+		// 		UserRole.FINANCE_ADMIN,
+		// 	],
+		// },
+		// {
+		// 	title: "Loan Details",
+		// 	href: "/dashboard/loans/details",
+		// 	icon: FileSearch,
+		// 	roles: [
+		// 		UserRole.LOAN_OFFICER,
+		// 		UserRole.BRANCH_MANAGER,
+		// 		UserRole.REGIONAL_MANAGER,
+		// 		UserRole.FINANCE_ADMIN,
+		// 	],
+		// },
+		{
+			title: "Approval History",
+			href: "/dashboard/loans/approval-history",
+			icon: History,
 			roles: [
 				UserRole.LOAN_OFFICER,
 				UserRole.BRANCH_MANAGER,
@@ -88,20 +127,53 @@ export function DashboardShell({ children }: DashboardShellProps) {
 		{
 			title: "Verify Loans",
 			href: "/dashboard/loans/verify",
-			icon: FileText,
+			icon: CheckCircle,
 			roles: [UserRole.LOAN_OFFICER],
 		},
-		{
-			title: "Approve Loans",
-			href: "/dashboard/loans/approve",
-			icon: FileText,
-			roles: [UserRole.BRANCH_MANAGER, UserRole.REGIONAL_MANAGER],
-		},
+		// {
+		// 	title: "Approve Loans",
+		// 	href: "/dashboard/loans/approve",
+		// 	icon: FileText,
+		// 	roles: [UserRole.BRANCH_MANAGER, UserRole.REGIONAL_MANAGER],
+		// },
 		{
 			title: "Disburse Loans",
 			href: "/dashboard/loans/disburse",
-			icon: CreditCard,
+			icon: DollarSign,
 			roles: [UserRole.FINANCE_ADMIN],
+		},
+		{
+			title: "Loan Calculator",
+			href: "/dashboard/loans/calculator",
+			icon: Calculator,
+			roles: [
+				UserRole.LOAN_OFFICER,
+				UserRole.BRANCH_MANAGER,
+				UserRole.REGIONAL_MANAGER,
+				UserRole.FINANCE_ADMIN,
+			],
+		},
+		{
+			title: "Loan Documents",
+			href: "/dashboard/loans/documents",
+			icon: Upload,
+			roles: [
+				UserRole.LOAN_OFFICER,
+				UserRole.BRANCH_MANAGER,
+				UserRole.REGIONAL_MANAGER,
+				UserRole.FINANCE_ADMIN,
+			],
+		},
+		{
+			title: "Loan Approval Dashboard",
+			href: "/dashboard/loans/approval-dashboard",
+			icon: ClipboardList,
+			roles: [
+				UserRole.LOAN_OFFICER,
+				UserRole.BRANCH_MANAGER,
+				UserRole.REGIONAL_MANAGER,
+				UserRole.FINANCE_ADMIN,
+			],
 		},
 		{
 			title: "Reports",
@@ -133,8 +205,19 @@ export function DashboardShell({ children }: DashboardShellProps) {
 	];
 
 	const filteredNavItems = navItems.filter(
-		(item) => user && item.roles.includes(user.role as any)
+		(item) => user && item.roles.includes(user.role as UserRole | any)
 	);
+
+	useEffect(() => {
+		const handleResize = () => {
+			if (window.innerWidth >= 768) {
+				setIsOpen(false);
+			}
+		};
+
+		window.addEventListener("resize", handleResize);
+		return () => window.removeEventListener("resize", handleResize);
+	}, []);
 
 	return (
 		<div className="flex min-h-screen flex-col bg-gray-100">
@@ -172,8 +255,8 @@ export function DashboardShell({ children }: DashboardShellProps) {
 						<span className="sr-only">Close Menu</span>
 					</Button>
 				</div>
-				<div className="flex flex-col">
-					<div className="flex-1 overflow-auto py-2">
+				<div className="flex flex-col h-[calc(100vh-4rem)]">
+					<div className="flex-1 overflow-y-auto py-2">
 						<nav className="grid gap-1 px-2">
 							{filteredNavItems.map((item, index) => (
 								<Link
@@ -181,21 +264,21 @@ export function DashboardShell({ children }: DashboardShellProps) {
 									href={item.href}
 									onClick={closeSidebar}
 									className={cn(
-										"flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-gray-100",
+										"flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors duration-200 ease-in-out hover:bg-gray-100",
 										pathname === item.href
-											? "bg-gray-100 text-blue-600"
+											? "bg-blue-100 text-blue-600"
 											: "text-gray-700"
 									)}>
-									<item.icon className="h-4 w-4" />
+									<item.icon className="h-5 w-5" />
 									{item.title}
 								</Link>
 							))}
 						</nav>
 					</div>
-					<div className="mt-auto border-t p-4">
+					<div className="border-t p-4">
 						<div className="mb-2 flex items-center gap-2">
-							<div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-								<span className="text-sm font-medium text-blue-700">
+							<div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+								<span className="text-lg font-medium text-blue-700">
 									{user?.name.charAt(0)}
 								</span>
 							</div>
