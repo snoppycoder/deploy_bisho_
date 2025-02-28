@@ -17,8 +17,32 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import * as XLSX from "xlsx";
 
+interface MemberData {
+	"Location Category": string;
+	"Location": string;
+	"Employee Number": number;
+	"ET Number": number;
+	"Assignment Number": number;
+	"Name": string;
+	"Division": string;
+	"Department"?: string;
+	"Section": string;
+	"Group": string;
+	"Assignment Status": string;
+	"Effective Date": number;
+	"Credit Association Savings": number;
+	"Credit Association Membership Fee": number;
+	"Credit Association Registration Fee": number;
+	"Credit Association Cost of Share": number;
+	"Credit Association Loan Repayment": number;
+	"Credit Association Purchases": number;
+	"Credit Association Willing Deposit": number;
+	"Total": number;
+}
+
 export default function ImportMembersPage() {
 	const [file, setFile] = useState<File | null>(null);
+	const [importErrors, setImportErrors] = useState<string[]>([]);
 	const router = useRouter();
 	const { toast } = useToast();
 
@@ -44,7 +68,7 @@ export default function ImportMembersPage() {
 			const workbook = XLSX.read(data, { type: "array" });
 			const sheetName = workbook.SheetNames[0];
 			const worksheet = workbook.Sheets[sheetName];
-			const jsonData = XLSX.utils.sheet_to_json(worksheet);
+			const jsonData: MemberData[] = XLSX.utils.sheet_to_json(worksheet);
 
 			try {
 				const response = await fetch("/api/members/import", {
@@ -59,12 +83,20 @@ export default function ImportMembersPage() {
 					throw new Error("Failed to import members");
 				}
 
+				const result = await response.json();
+
+				if (result.errors && result.errors.length > 0) {
+					setImportErrors(result.errors);
+				}
+
 				toast({
 					title: "Success",
-					description: "Members imported successfully.",
+					description: `Imported ${result.importedCount} members successfully.`,
 				});
 
-				router.push("/dashboard/members");
+				if (result.importedCount > 0) {
+					router.push("/dashboard/members");
+				}
 			} catch (error) {
 				console.error("Error importing members:", error);
 				toast({
@@ -103,6 +135,25 @@ export default function ImportMembersPage() {
 					</div>
 				</CardContent>
 			</Card>
+			{importErrors.length > 0 && (
+				<Card>
+					<CardHeader>
+						<CardTitle>Import Errors</CardTitle>
+						<CardDescription>
+							The following errors occurred during import:
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<ul className="list-disc pl-5">
+							{importErrors.map((error, index) => (
+								<li key={index} className="text-red-500">
+									{error}
+								</li>
+							))}
+						</ul>
+					</CardContent>
+				</Card>
+			)}
 		</div>
 	);
 }

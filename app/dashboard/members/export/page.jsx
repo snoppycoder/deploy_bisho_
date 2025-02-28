@@ -20,7 +20,7 @@ export default function ExportMembersPage() {
 		setIsExporting(true);
 
 		try {
-			const response = await fetch("/api/members");
+			const response = await fetch("/api/members/export");
 			if (!response.ok) {
 				throw new Error("Failed to fetch members");
 			}

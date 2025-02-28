@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,6 +23,14 @@ interface Member {
 	department: string | null;
 	section: string | null;
 	group: string | null;
+	balance: {
+		totalSavings: number;
+		totalContributions: number;
+		costOfShare: number;
+		registrationFee: number;
+		membershipFee: number;
+		willingDeposit: number;
+	} | null;
 }
 
 export default function MembersListPage() {
@@ -32,8 +40,7 @@ export default function MembersListPage() {
 	const router = useRouter();
 	const { toast } = useToast();
 
-	// Fetch members data
-	const fetchMembers = async () => {
+	const fetchMembers = useCallback(async () => {
 		setIsLoading(true);
 		try {
 			const response = await fetch("/api/members");
@@ -52,12 +59,11 @@ export default function MembersListPage() {
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [toast]);
 
-	// Call fetchMembers when the component mounts
 	useEffect(() => {
 		fetchMembers();
-	}, []);
+	}, [fetchMembers]);
 
 	const filteredMembers = members.filter(
 		(member) =>
@@ -76,9 +82,14 @@ export default function MembersListPage() {
 					onChange={(e) => setSearchTerm(e.target.value)}
 					className="max-w-sm"
 				/>
-				<Button onClick={() => router.push("/dashboard/members/import")}>
-					Import Members
-				</Button>
+				<div className="space-x-2">
+					<Button onClick={() => router.push("/dashboard/members/add")}>
+						Add Member
+					</Button>
+					<Button onClick={() => router.push("/dashboard/members/import")}>
+						Import Members
+					</Button>
+				</div>
 			</div>
 			{isLoading ? (
 				<p>Loading members...</p>
@@ -93,6 +104,12 @@ export default function MembersListPage() {
 							<TableHead>Department</TableHead>
 							<TableHead>Section</TableHead>
 							<TableHead>Group</TableHead>
+							<TableHead>Total Savings</TableHead>
+							<TableHead>Cost of Share</TableHead>
+							<TableHead>Registration Fee</TableHead>
+							<TableHead>Membership Fee</TableHead>
+							<TableHead>Willing Deposit</TableHead>
+							<TableHead>Total Contributions</TableHead>
 							<TableHead>Actions</TableHead>
 						</TableRow>
 					</TableHeader>
@@ -106,6 +123,24 @@ export default function MembersListPage() {
 								<TableCell>{member.department}</TableCell>
 								<TableCell>{member.section}</TableCell>
 								<TableCell>{member.group}</TableCell>
+								<TableCell>
+									{Number(member.balance?.totalSavings).toFixed(2)}
+								</TableCell>
+								<TableCell>
+									{Number(member.balance?.costOfShare).toFixed(2)}
+								</TableCell>
+								<TableCell>
+									{Number(member.balance?.registrationFee).toFixed(2)}
+								</TableCell>
+								<TableCell>
+									{Number(member.balance?.membershipFee).toFixed(2)}
+								</TableCell>
+								<TableCell>
+									{Number(member.balance?.willingDeposit).toFixed(2)}
+								</TableCell>
+								<TableCell>
+									{Number(member.balance?.totalContributions).toFixed(2)}
+								</TableCell>
 								<TableCell>
 									<Button
 										variant="outline"

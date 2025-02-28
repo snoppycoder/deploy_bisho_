@@ -25,16 +25,23 @@ model Member {
   updatedAt      DateTime        @updatedAt
   user           User?           @relation(fields: [userId], references: [id])
   userId         Int?            @unique
+
+  @@index([name])
+  @@index([division])
+  @@index([department])
+  @@index([section])
+  @@index([group])
 }
 
 model MemberHistory {
-  id         Int      @id @default(autoincrement())
-  memberId   Int
-  changeDate DateTime @default(now())
-  fieldName  String
-  oldValue   String?
-  newValue   String?
-  member     Member   @relation(fields: [memberId], references: [id])
+  id            Int      @id @default(autoincrement())
+  memberId      Int
+  changeDate    DateTime @default(now())
+  effectiveDate DateTime
+  fieldName     String
+  oldValue      String?
+  newValue      String?
+  member        Member   @relation(fields: [memberId], references: [id])
 }
 
 model MemberBalance {
@@ -42,6 +49,10 @@ model MemberBalance {
   memberId            Int      @unique
   totalSavings        Decimal  @default(0.00)
   totalContributions  Decimal  @default(0.00)
+  costOfShare         Decimal  @default(0.00)
+  registrationFee     Decimal  @default(0.00)
+  membershipFee       Decimal  @default(0.00)
+  willingDeposit      Decimal  @default(0.00)
   member              Member   @relation(fields: [memberId], references: [id])
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
@@ -67,6 +78,9 @@ model Transaction {
   member          Member          @relation(fields: [memberId], references: [id])
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
+
+  @@index([memberId, transactionDate])
+  @@index([type, transactionDate])
 }
 
 model Loan {
@@ -134,7 +148,10 @@ model User {
   uploadedDocs    LoanDocument[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
+
+  Notification Notification[]
 }
+
 
 enum TransactionType {
   SAVINGS
@@ -174,4 +191,28 @@ enum DocumentType {
   COLLATERAL
   OTHER
 }
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  title     String
+  message   String
+  type      NotificationType
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum NotificationType {
+  LOAN_APPLICATION_SUBMITTED
+  LOAN_STATUS_UPDATE
+  LOAN_DISBURSEMENT_READY
+  LOAN_REPAYMENT_DUE
+  LOAN_REPAYMENT_RECEIVED
+  SAVINGS_UPDATE
+  ACCOUNT_UPDATE
+  GENERAL
+}
+
 

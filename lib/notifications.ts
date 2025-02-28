@@ -1,7 +1,8 @@
 import prisma from "@/lib/prisma";
+import { Notification } from "@prisma/client";
 
 interface NotificationPayload {
-	userId: number;
+	userId: number | any;
 	title: string;
 	message: string;
 	type: string;
@@ -9,14 +10,14 @@ interface NotificationPayload {
 
 export const sendNotification = async (payload: NotificationPayload) => {
 	try {
-		// await prisma.notification.create({
-		// 	data: {
-		// 		userId: payload.userId,
-		// 		title: payload.title,
-		// 		message: payload.message,
-		// 		type: payload.type,
-		// 	},
-		// });
+		await prisma.notification.create({
+			data: {
+				userId: payload.userId,
+				title: payload.title,
+				message: payload.message,
+				type: payload.type as Notification["type"],
+			},
+		});
 	} catch (error) {
 		console.error("Error sending notification:", error);
 	}
