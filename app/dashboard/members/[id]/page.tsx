@@ -425,24 +425,25 @@ function MemberDetailPage() {
 												</TableRow>
 											</TableHeader>
 											<TableBody>
-												{loan.repayments.map((repayment) => (
-													<TableRow key={repayment.id}>
-														<TableCell>
-															{new Date(
-																repayment.repaymentDate
-															).toLocaleDateString()}
-														</TableCell>
-														<TableCell>
-															{formatCurrency(repayment.amount)}
-														</TableCell>
-														<TableCell>
-															<Badge
-																className={getStatusColor(repayment.status)}>
-																{repayment.status}
-															</Badge>
-														</TableCell>
-													</TableRow>
-												))}
+												{loan.repayments &&
+													loan.repayments.map((repayment) => (
+														<TableRow key={repayment.id}>
+															<TableCell>
+																{new Date(
+																	repayment.repaymentDate
+																).toLocaleDateString()}
+															</TableCell>
+															<TableCell>
+																{formatCurrency(repayment.amount)}
+															</TableCell>
+															<TableCell>
+																<Badge
+																	className={getStatusColor(repayment.status)}>
+																	{repayment.status}
+																</Badge>
+															</TableCell>
+														</TableRow>
+													))}
 											</TableBody>
 										</Table>
 									</CardContent>

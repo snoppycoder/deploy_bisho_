@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { LoanApprovalStatus } from "@prisma/client";
 
 export async function GET(
 	request: NextRequest,
@@ -50,7 +51,7 @@ export async function GET(
 
 		// Calculate active loans
 		const activeLoans = member.loans.filter(
-			(loan) => loan.status === ("ACTIVE" as any)
+			(loan) => loan.status === ("DISBURSED" as LoanApprovalStatus)
 		).length;
 
 		// Prepare fees

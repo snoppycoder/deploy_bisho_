@@ -48,9 +48,6 @@ export default function MemberDashboardPage() {
 
 	useEffect(() => {
 		const fetchMemberData = async () => {
-			console.log({
-				et: user?.etNumber,
-			});
 			if (user?.etNumber) {
 				try {
 					const response = await fetch(`/api/members/${user.etNumber}`);
@@ -143,11 +140,17 @@ export default function MemberDashboardPage() {
 					</CardHeader>
 					<CardContent>
 						<div className="text-2xl font-bold">
-							ETB {Number(memberData.nextPayment?.amount).toFixed(2) || "0.00"}
+							{/* {JSON.stringify(memberData?.loans[0]?.loanRepayments[0]?.amount)} */}
+							ETB{" "}
+							{Number(memberData?.loans[0]?.loanRepayments[0]?.amount).toFixed(
+								2
+							) || "0.00"}
 						</div>
 						<p className="text-xs text-muted-foreground">
 							Due on{" "}
-							{memberData.nextPayment?.repaymentDate.split("T")[0] || "N/A"}
+							{memberData?.loans[0]?.loanRepayments[0]?.repaymentDate.split(
+								"T"
+							)[0] || "N/A"}
 						</p>
 					</CardContent>
 				</Card>
@@ -244,7 +247,7 @@ export default function MemberDashboardPage() {
 										className={`text-sm font-medium ${
 											transaction.amount > 0 ? "text-green-500" : "text-red-500"
 										}`}>
-										{transaction.amount > 0 ? "+" : "-"}$
+										{transaction.amount > 0 ? "+" : "-"}ETB
 										{Math.abs(transaction.amount).toFixed(2)}
 									</div>
 								</div>

@@ -180,7 +180,7 @@ export default function IndividualLoanDetailPage() {
 								<TableCell>
 									{new Date(repayment.repaymentDate).toLocaleDateString()}
 								</TableCell>
-								<TableCell>${Number(repayment.amount).toFixed(2)}</TableCell>
+								<TableCell>ETB {Number(repayment.amount).toFixed(2)}</TableCell>
 								<TableCell>
 									<Badge className={getStatusColor(repayment.status)}>
 										{repayment.status}
@@ -224,7 +224,7 @@ export default function IndividualLoanDetailPage() {
 						</div>
 						<div>
 							<h3 className="font-semibold">Loan Amount</h3>
-							<p>${Number(loanDetail.amount).toFixed(2)}</p>
+							<p>ETB {Number(loanDetail.amount).toFixed(2)}</p>
 						</div>
 						<div>
 							<h3 className="font-semibold">Interest Rate</h3>

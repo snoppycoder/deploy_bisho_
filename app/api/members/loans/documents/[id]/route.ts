@@ -4,18 +4,22 @@ import prisma from "@/lib/prisma";
 
 export async function GET(
 	req: NextRequest,
-	{ params }: { params: { fileId: string } }
+	{ params }: { params: { id: string } }
 ) {
 	const session = await getSession();
-	if (!session) {
+	if (!session || session.role !== "MEMBER") {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
 
+	const documentId = Number.parseInt(params.id);
+
 	try {
-		const fileId = params.fileId;
 		const document = await prisma.loanDocument.findFirst({
 			where: {
-				documentUrl: `/api/loans/documents/${fileId}`,
+				id: documentId,
+				loan: {
+					memberId: session.etNumber,
+				},
 			},
 		});
 
@@ -26,21 +30,17 @@ export async function GET(
 			);
 		}
 
-		// Create a response with the file content
 		const response = new NextResponse(document.documentContent);
-
-		// Set the appropriate headers
 		response.headers.set("Content-Type", document.mimeType);
 		response.headers.set(
 			"Content-Disposition",
-			`inline; filename="${document.fileName}"`
+			`attachment; filename="${document.fileName}"`
 		);
-
 		return response;
 	} catch (error) {
-		console.error("Error retrieving document:", error);
+		console.error("Error fetching member loan document:", error);
 		return NextResponse.json(
-			{ error: "Failed to retrieve document" },
+			{ error: "Internal server error" },
 			{ status: 500 }
 		);
 	}

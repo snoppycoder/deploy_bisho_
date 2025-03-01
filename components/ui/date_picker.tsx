@@ -1,5 +1,7 @@
+"use client";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
+
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -9,12 +11,19 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 
+interface DatePickerProps {
+	selected: Date;
+	onSelect: (date: Date | undefined) => void;
+	placeholderText?: string;
+	className?: string;
+}
+
 export function DatePicker({
 	selected,
 	onSelect,
 	placeholderText = "Pick a date",
 	className,
-}: any) {
+}: DatePickerProps) {
 	return (
 		<Popover>
 			<PopoverTrigger asChild>

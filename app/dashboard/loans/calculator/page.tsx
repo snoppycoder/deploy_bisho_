@@ -1,10 +1,27 @@
 "use client";
 
 import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	Table,
 	TableBody,
@@ -13,109 +30,195 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
+import { useToast } from "@/components/ui/use-toast";
+
+const formSchema = z.object({
+	loanAmount: z.string().min(1, "Loan amount is required").transform(Number),
+	interestRate: z
+		.string()
+		.min(1, "Interest rate is required")
+		.transform(Number),
+	loanTerm: z.string().min(1, "Loan term is required").transform(Number),
+	repaymentFrequency: z.enum(["monthly", "quarterly", "annually"]),
+});
+
+type LoanCalculationResult = {
+	monthlyPayment: number;
+	totalPayment: number;
+	totalInterest: number;
+	amortizationSchedule: {
+		period: number;
+		payment: number;
+		principal: number;
+		interest: number;
+		balance: number;
+	}[];
+};
 
 export default function LoanCalculatorPage() {
-	const [loanAmount, setLoanAmount] = useState("");
-	const [interestRate, setInterestRate] = useState("");
-	const [loanTerm, setLoanTerm] = useState("");
-	const [repaymentSchedule, setRepaymentSchedule] = useState<any[]>([]);
+	const [calculationResult, setCalculationResult] =
+		useState<LoanCalculationResult | null>(null);
+	const { toast } = useToast();
 
-	const calculateLoan = () => {
-		const amount = Number.parseFloat(loanAmount);
-		const rate = Number.parseFloat(interestRate) / 100 / 12;
-		const term = Number.parseInt(loanTerm);
+	const form = useForm<z.infer<typeof formSchema>>({
+		resolver: zodResolver(formSchema),
+		defaultValues: {
+			loanAmount: "",
+			interestRate: "",
+			loanTerm: "",
+			repaymentFrequency: "monthly",
+		} as any,
+	});
 
-		if (isNaN(amount) || isNaN(rate) || isNaN(term)) {
-			alert("Please enter valid numbers for all fields");
-			return;
-		}
+	async function onSubmit(values: z.infer<typeof formSchema>) {
+		try {
+			const response = await fetch("/api/loans/calculate", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(values),
+			});
 
-		const monthlyPayment =
-			(amount * rate * Math.pow(1 + rate, term)) /
-			(Math.pow(1 + rate, term) - 1);
-		let balance = amount;
-		const schedule = [];
+			if (!response.ok) {
+				throw new Error("Failed to calculate loan");
+			}
 
-		for (let i = 1; i <= term; i++) {
-			const interest = balance * rate;
-			const principal = monthlyPayment - interest;
-			balance -= principal;
-
-			schedule.push({
-				month: i,
-				payment: monthlyPayment.toFixed(2),
-				principal: principal.toFixed(2),
-				interest: interest.toFixed(2),
-				balance: balance > 0 ? balance.toFixed(2) : 0,
+			const result = await response.json();
+			setCalculationResult(result);
+		} catch (error) {
+			console.error("Error calculating loan:", error);
+			toast({
+				title: "Error",
+				description: "Failed to calculate loan. Please try again.",
+				variant: "destructive",
 			});
 		}
-
-		setRepaymentSchedule(schedule);
-	};
+	}
 
 	return (
-		<Card>
-			<CardHeader>
-				<CardTitle>Loan Calculator</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<div className="grid gap-4">
-					<div className="grid grid-cols-3 gap-4">
-						<div>
-							<Label htmlFor="loanAmount">Loan Amount</Label>
-							<Input
-								id="loanAmount"
-								value={loanAmount}
-								onChange={(e) => setLoanAmount(e.target.value)}
-								placeholder="Enter loan amount"
+		<div className="space-y-6">
+			<Card>
+				<CardHeader>
+					<CardTitle>Loan Calculator</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<FormField
+								control={form.control}
+								name="loanAmount"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Loan Amount (ETB)</FormLabel>
+										<FormControl>
+											<Input type="number" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
-						</div>
-						<div>
-							<Label htmlFor="interestRate">Interest Rate (%)</Label>
-							<Input
-								id="interestRate"
-								value={interestRate}
-								onChange={(e) => setInterestRate(e.target.value)}
-								placeholder="Enter interest rate"
+							<FormField
+								control={form.control}
+								name="interestRate"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Annual Interest Rate (%)</FormLabel>
+										<FormControl>
+											<Input type="number" step="0.01" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
-						</div>
-						<div>
-							<Label htmlFor="loanTerm">Loan Term (months)</Label>
-							<Input
-								id="loanTerm"
-								value={loanTerm}
-								onChange={(e) => setLoanTerm(e.target.value)}
-								placeholder="Enter loan term"
+							<FormField
+								control={form.control}
+								name="loanTerm"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Loan Term (months)</FormLabel>
+										<FormControl>
+											<Input type="number" {...field} />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
+							<FormField
+								control={form.control}
+								name="repaymentFrequency"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Repayment Frequency</FormLabel>
+										<Select
+											onValueChange={field.onChange}
+											defaultValue={field.value}>
+											<FormControl>
+												<SelectTrigger>
+													<SelectValue placeholder="Select repayment frequency" />
+												</SelectTrigger>
+											</FormControl>
+											<SelectContent>
+												<SelectItem value="monthly">Monthly</SelectItem>
+												<SelectItem value="quarterly">Quarterly</SelectItem>
+												<SelectItem value="annually">Annually</SelectItem>
+											</SelectContent>
+										</Select>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<Button type="submit">Calculate</Button>
+						</form>
+					</Form>
+				</CardContent>
+			</Card>
+
+			{calculationResult && (
+				<Card>
+					<CardHeader>
+						<CardTitle>Loan Calculation Results</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<div className="space-y-4">
+							<div>
+								<strong>Monthly Payment:</strong>{" "}
+								{calculationResult.monthlyPayment.toFixed(2)} ETB
+							</div>
+							<div>
+								<strong>Total Payment:</strong>{" "}
+								{calculationResult.totalPayment.toFixed(2)} ETB
+							</div>
+							<div>
+								<strong>Total Interest:</strong>{" "}
+								{calculationResult.totalInterest.toFixed(2)} ETB
+							</div>
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Period</TableHead>
+										<TableHead>Payment</TableHead>
+										<TableHead>Principal</TableHead>
+										<TableHead>Interest</TableHead>
+										<TableHead>Balance</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{calculationResult.amortizationSchedule.map((row) => (
+										<TableRow key={row.period}>
+											<TableCell>{row.period}</TableCell>
+											<TableCell>{row.payment.toFixed(2)}</TableCell>
+											<TableCell>{row.principal.toFixed(2)}</TableCell>
+											<TableCell>{row.interest.toFixed(2)}</TableCell>
+											<TableCell>{row.balance.toFixed(2)}</TableCell>
+										</TableRow>
+									))}
+								</TableBody>
+							</Table>
 						</div>
-					</div>
-					<Button onClick={calculateLoan}>Calculate</Button>
-				</div>
-				{repaymentSchedule.length > 0 && (
-					<Table className="mt-4">
-						<TableHeader>
-							<TableRow>
-								<TableHead>Month</TableHead>
-								<TableHead>Payment</TableHead>
-								<TableHead>Principal</TableHead>
-								<TableHead>Interest</TableHead>
-								<TableHead>Balance</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{repaymentSchedule.map((row) => (
-								<TableRow key={row.month}>
-									<TableCell>{row.month}</TableCell>
-									<TableCell>${row.payment}</TableCell>
-									<TableCell>${row.principal}</TableCell>
-									<TableCell>${row.interest}</TableCell>
-									<TableCell>${row.balance}</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				)}
-			</CardContent>
-		</Card>
+					</CardContent>
+				</Card>
+			)}
+		</div>
 	);
 }

@@ -158,13 +158,17 @@ export default function LoanDetailPage() {
 		);
 		const progressPercentage = (totalRepaid / loan.amount) * 100;
 
+		console.log({
+			loan,
+		});
+
 		return Math.min(progressPercentage, 100);
 	};
 
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat("en-US", {
 			style: "currency",
-			currency: "USD",
+			currency: "ETB",
 		}).format(amount);
 	};
 

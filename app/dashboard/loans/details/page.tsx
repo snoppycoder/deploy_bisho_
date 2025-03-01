@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 interface Loan {
 	id: number;
@@ -41,13 +42,37 @@ export default function LoanDetailsPage() {
 			const response = await fetch("/api/loans");
 			if (response.ok) {
 				const data = await response.json();
-				setLoans(data);
+				// Sort loans by createdAt date, most recent first
+				const sortedLoans = data.sort(
+					(a: Loan, b: Loan) =>
+						new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+				);
+				setLoans(sortedLoans);
 			} else {
 				throw new Error("Failed to fetch loans");
 			}
 		} catch (error) {
 			console.error("Error fetching loans:", error);
 			toast({ title: "Failed to fetch loans", variant: "destructive" });
+		}
+	};
+
+	const getStatusColor = (status: string) => {
+		switch (status) {
+			case "PENDING":
+				return "bg-yellow-500 text-white";
+			case "VERIFIED":
+				return "bg-blue-500 text-white";
+			case "APPROVED":
+				return "bg-green-500 text-white";
+			case "DISBURSED":
+				return "bg-purple-500 text-white";
+			case "REPAID":
+				return "bg-gray-500 text-white";
+			case "REJECTED":
+				return "bg-red-500 text-white";
+			default:
+				return "bg-gray-300 text-gray-800";
 		}
 	};
 
@@ -75,10 +100,19 @@ export default function LoanDetailsPage() {
 							<TableRow key={loan.id}>
 								<TableCell>{loan.id}</TableCell>
 								<TableCell>{loan.member.name}</TableCell>
-								<TableCell>${Number(loan.amount).toFixed(2)}</TableCell>
+								<TableCell>
+									{new Intl.NumberFormat("en-ET", {
+										style: "currency",
+										currency: "ETB",
+									}).format(Number(loan.amount))}
+								</TableCell>
 								<TableCell>{loan.interestRate}%</TableCell>
 								<TableCell>{loan.tenureMonths}</TableCell>
-								<TableCell>{loan.status}</TableCell>
+								<TableCell>
+									<Badge className={getStatusColor(loan.status)}>
+										{loan.status}
+									</Badge>
+								</TableCell>
 								<TableCell>
 									{new Date(loan.createdAt).toLocaleDateString()}
 								</TableCell>

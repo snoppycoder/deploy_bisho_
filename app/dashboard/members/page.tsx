@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
 	type ColumnDef,
@@ -14,8 +14,14 @@ import {
 	getSortedRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react";
-import { format, startOfMonth } from "date-fns";
+import {
+	ArrowUpDown,
+	ChevronDown,
+	MoreHorizontal,
+	Download,
+	User,
+} from "lucide-react";
+import { format, parseISO, startOfMonth } from "date-fns";
 
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -39,6 +45,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import { DatePicker } from "@/components/ui/date_picker";
+import { Badge } from "@/components/ui/badge_cc";
 
 interface Member {
 	id: number;
@@ -65,21 +72,16 @@ export default function MembersListPage() {
 	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = useState({});
-	const [effectiveDate, setEffectiveDate] = useState<Date | null>(null);
+	const [effectiveDate, setEffectiveDate] = useState<Date>(
+		startOfMonth(new Date())
+	);
 	const router = useRouter();
 	const { toast } = useToast();
 
-	useEffect(() => {
-		fetchMembers();
-	}, [effectiveDate]);
-
-	const fetchMembers = async () => {
+	const fetchMembers = useCallback(async () => {
 		try {
 			const url = new URL("/api/members", window.location.origin);
-			if (effectiveDate) {
-				const monthStart = startOfMonth(effectiveDate);
-				url.searchParams.append("effectiveDate", monthStart.toISOString());
-			}
+			url.searchParams.append("effectiveDate", effectiveDate.toISOString());
 			const response = await fetch(url.toString());
 			if (!response.ok) {
 				throw new Error("Failed to fetch members");
@@ -94,7 +96,11 @@ export default function MembersListPage() {
 				variant: "destructive",
 			});
 		}
-	};
+	}, [effectiveDate, toast]);
+
+	useEffect(() => {
+		fetchMembers();
+	}, [fetchMembers]);
 
 	const columns: ColumnDef<Member>[] = useMemo(
 		() => [
@@ -148,7 +154,13 @@ export default function MembersListPage() {
 			{
 				accessorKey: "division",
 				header: "Division",
-				cell: ({ row }) => <div>{row.getValue("division")}</div>,
+				cell: ({ row }) => (
+					<Badge
+						variant="outline"
+						className="bg-green-100 text-green-800 border-green-300">
+						{row.getValue("division") || "N/A"}
+					</Badge>
+				),
 			},
 			{
 				accessorKey: "department",
@@ -156,24 +168,31 @@ export default function MembersListPage() {
 				cell: ({ row }) => <div>{row.getValue("department")}</div>,
 			},
 			{
-				accessorKey: "section",
-				header: "Section",
-				cell: ({ row }) => <div>{row.getValue("section")}</div>,
+				accessorKey: "group",
+				header: "Group",
+				cell: ({ row }) => <div>{row.getValue("group")}</div>,
 			},
 			{
 				accessorKey: "effectiveDate",
 				header: "Effective Date",
 				cell: ({ row }) => {
 					const date = row.getValue("effectiveDate");
-					return date ? format(new Date(date as string), "MMMM yyyy") : "N/A";
+					const displayDate = date ? parseISO(date as string) : new Date();
+					return (
+						<Badge
+							variant="outline"
+							className="bg-blue-100 text-blue-800 border-blue-300">
+							{format(displayDate, "MMMM yyyy")}
+						</Badge>
+					);
 				},
 			},
 			{
 				accessorKey: "balance.totalSavings",
-				header: "Total Savings",
+				header: "Current Month Savings",
 				cell: ({ row }) => {
 					const amount = row.original.balance.totalSavings;
-					const formatted = new Intl.NumberFormat("en-US", {
+					const formatted = new Intl.NumberFormat("en-ET", {
 						style: "currency",
 						currency: "ETB",
 					}).format(amount);
@@ -185,7 +204,7 @@ export default function MembersListPage() {
 				header: "Total Contributions",
 				cell: ({ row }) => {
 					const amount = row.original.balance.totalContributions;
-					const formatted = new Intl.NumberFormat("en-US", {
+					const formatted = new Intl.NumberFormat("en-ET", {
 						style: "currency",
 						currency: "ETB",
 					}).format(amount);
@@ -197,19 +216,7 @@ export default function MembersListPage() {
 				header: "Loan Repayments",
 				cell: ({ row }) => {
 					const amount = row.original.balance.loanRepayments;
-					const formatted = new Intl.NumberFormat("en-US", {
-						style: "currency",
-						currency: "ETB",
-					}).format(amount);
-					return <div>{formatted}</div>;
-				},
-			},
-			{
-				accessorKey: "balance.membershipFee",
-				header: "Membership Fee",
-				cell: ({ row }) => {
-					const amount = row.original.balance.membershipFee;
-					const formatted = new Intl.NumberFormat("en-US", {
+					const formatted = new Intl.NumberFormat("en-ET", {
 						style: "currency",
 						currency: "ETB",
 					}).format(amount);
@@ -221,7 +228,7 @@ export default function MembersListPage() {
 				header: "Willing Deposit",
 				cell: ({ row }) => {
 					const amount = row.original.balance.willingDeposit;
-					const formatted = new Intl.NumberFormat("en-US", {
+					const formatted = new Intl.NumberFormat("en-ET", {
 						style: "currency",
 						currency: "ETB",
 					}).format(amount);
@@ -286,17 +293,71 @@ export default function MembersListPage() {
 		},
 	});
 
+	const handleDateChange = useCallback((date: Date | undefined) => {
+		if (date) {
+			const newDate = startOfMonth(date);
+			console.log("New effective date:", newDate.toISOString()); // Debug log
+			setEffectiveDate(newDate);
+		}
+	}, []);
+
+	const handleExport = useCallback(() => {
+		const headers = columns
+			.filter(
+				(column: any) =>
+					column.accessorKey &&
+					column.accessorKey !== "membershipFee" &&
+					column.accessorKey !== "section"
+			)
+			.map((column) => column.header as string);
+
+		const csvContent = [
+			headers.join(","),
+			...members.map((member) =>
+				columns
+					.filter(
+						(column: any) =>
+							column.accessorKey &&
+							column.accessorKey !== "membershipFee" &&
+							column.accessorKey !== "section"
+					)
+					.map((column: any) => {
+						const value = column.accessorKey
+							.split(".")
+							.reduce((obj: any, key: any) => obj[key], member);
+						return typeof value === "string" && value.includes(",")
+							? `"${value}"`
+							: value;
+					})
+					.join(",")
+			),
+		].join("\n");
+
+		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+		const link = document.createElement("a");
+		if (link.download !== undefined) {
+			const url = URL.createObjectURL(blob);
+			link.setAttribute("href", url);
+			link.setAttribute(
+				"download",
+				`members_${format(new Date(), "yyyy-MM-dd")}.csv`
+			);
+			link.style.visibility = "hidden";
+			document.body.appendChild(link);
+			link.click();
+			document.body.removeChild(link);
+		}
+	}, [members, columns]);
+
 	return (
-		<div className="space-y-4">
+		<div className="space-y-4 ">
 			<div className="flex items-center justify-between">
 				<h1 className="text-2xl font-bold">Members List</h1>
 				<div className="flex items-center space-x-2">
 					<DatePicker
 						selected={effectiveDate}
-						onSelect={(date: any) => setEffectiveDate(date)}
+						onSelect={handleDateChange}
 						placeholderText="Select Effective Month"
-						dateFormat="MMMM yyyy"
-						showMonthYearPicker
 					/>
 					<Input
 						placeholder="Filter members..."
@@ -306,11 +367,18 @@ export default function MembersListPage() {
 						}
 						className="max-w-sm"
 					/>
-					<Button onClick={() => router.push("/dashboard/members/add")}>
+					<Button
+						className="bg-green-500"
+						onClick={() => router.push("/dashboard/members/add")}>
+						<User className="mr-2 h-4 w-4" />
 						Add Member
 					</Button>
 					<Button onClick={() => router.push("/dashboard/members/import")}>
 						Import Members
+					</Button>
+					<Button onClick={handleExport} className="bg-green-500">
+						<Download className="mr-2 h-4 w-4" />
+						Export CSV
 					</Button>
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
@@ -339,7 +407,7 @@ export default function MembersListPage() {
 					</DropdownMenu>
 				</div>
 			</div>
-			<div className="rounded-md border">
+			<div className="rounded-md border bg-white p-2">
 				<Table>
 					<TableHeader>
 						{table.getHeaderGroups().map((headerGroup) => (

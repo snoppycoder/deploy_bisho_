@@ -3,6 +3,7 @@
 import type React from "react";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Table,
@@ -16,13 +17,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 interface LoanDocument {
 	id: number;
 	loanId: number;
 	documentType: string;
-	documentUrl: string;
+	fileName: string;
 	uploadDate: string;
+	documentUrl: string;
 }
 
 export default function LoanDocumentsPage() {
@@ -31,6 +40,7 @@ export default function LoanDocumentsPage() {
 	const [documentType, setDocumentType] = useState("");
 	const [loanId, setLoanId] = useState("");
 	const { toast } = useToast();
+	const router = useRouter();
 
 	useEffect(() => {
 		fetchDocuments();
@@ -105,12 +115,16 @@ export default function LoanDocumentsPage() {
 					</div>
 					<div>
 						<Label htmlFor="documentType">Document Type</Label>
-						<Input
-							id="documentType"
-							value={documentType}
-							onChange={(e) => setDocumentType(e.target.value)}
-							placeholder="Enter document type"
-						/>
+						<Select value={documentType} onValueChange={setDocumentType}>
+							<SelectTrigger>
+								<SelectValue placeholder="Select document type" />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="AGREEMENT">Agreement</SelectItem>
+								<SelectItem value="COLLATERAL">Collateral</SelectItem>
+								<SelectItem value="OTHER">Other</SelectItem>
+							</SelectContent>
+						</Select>
 					</div>
 					<div>
 						<Label htmlFor="loanId">Loan ID</Label>
@@ -128,6 +142,7 @@ export default function LoanDocumentsPage() {
 						<TableRow>
 							<TableHead>Loan ID</TableHead>
 							<TableHead>Document Type</TableHead>
+							<TableHead>File Name</TableHead>
 							<TableHead>Upload Date</TableHead>
 							<TableHead>Actions</TableHead>
 						</TableRow>
@@ -137,6 +152,7 @@ export default function LoanDocumentsPage() {
 							<TableRow key={doc.id}>
 								<TableCell>{doc.loanId}</TableCell>
 								<TableCell>{doc.documentType}</TableCell>
+								<TableCell>{doc.fileName}</TableCell>
 								<TableCell>
 									{new Date(doc.uploadDate).toLocaleString()}
 								</TableCell>
