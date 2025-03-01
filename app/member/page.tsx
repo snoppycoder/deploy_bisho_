@@ -190,7 +190,7 @@ export default function MemberDashboardPage() {
 							index="name"
 							categories={["amount"]}
 							colors={["blue"]}
-							valueFormatter={(value) => `$${Number(value).toFixed(2)}`}
+							valueFormatter={(value) => `ETB ${Number(value).toFixed(2)}`}
 							className="h-[300px]"
 						/>
 					</CardContent>

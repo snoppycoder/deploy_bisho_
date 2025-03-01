@@ -47,11 +47,7 @@ export function MemberShell({ children }: MemberShellProps) {
 			href: "/member",
 			icon: Home,
 		},
-		{
-			title: "My Profile",
-			href: "/member/profile",
-			icon: User,
-		},
+
 		{
 			title: "Savings & Transactions",
 			href: "/member/savings",
@@ -86,6 +82,11 @@ export function MemberShell({ children }: MemberShellProps) {
 			title: "Reports",
 			href: "/member/reports",
 			icon: BarChart3,
+		},
+		{
+			title: "My Profile",
+			href: "/member/profile",
+			icon: User,
 		},
 		{
 			title: "Settings",

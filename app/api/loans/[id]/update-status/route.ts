@@ -98,6 +98,11 @@ export async function POST(
 			},
 		});
 
+		// If the loan status is changed to DISBURSED, create LoanRepayment records
+		if (newLoanStatus === "DISBURSED") {
+			await createLoanRepayments(updatedLoan);
+		}
+
 		console.log(
 			`Loan ${loanId} updated successfully. New status: ${newLoanStatus}`
 		);
@@ -113,4 +118,39 @@ export async function POST(
 			{ status: 500 }
 		);
 	}
+}
+
+async function createLoanRepayments(loan: any) {
+	const { id, amount, interestRate, tenureMonths } = loan;
+	const monthlyInterestRate = interestRate / 100 / 12;
+	const monthlyPayment =
+		(amount *
+			monthlyInterestRate *
+			Math.pow(1 + monthlyInterestRate, tenureMonths)) /
+		(Math.pow(1 + monthlyInterestRate, tenureMonths) - 1);
+
+	const repayments = [];
+	let remainingBalance = amount;
+	const startDate = new Date();
+
+	for (let i = 1; i <= tenureMonths; i++) {
+		const interestPayment = remainingBalance * monthlyInterestRate;
+		const principalPayment = monthlyPayment - interestPayment;
+		remainingBalance -= principalPayment;
+
+		const repaymentDate = new Date(startDate);
+		repaymentDate.setMonth(startDate.getMonth() + i);
+
+		repayments.push({
+			loanId: id,
+			amount: monthlyPayment,
+			repaymentDate,
+			sourceType: "ERP_PAYROLL",
+			// status: "PENDING",
+		});
+	}
+
+	await prisma.loanRepayment.createMany({
+		data: repayments,
+	} as any);
 }

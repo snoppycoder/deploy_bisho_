@@ -94,6 +94,19 @@ export default function LoanDetailPage() {
 		fetchLoanDetails();
 	}, [params.id, toast]);
 
+	const getStatusColor = (status: string) => {
+		switch (status.toLowerCase()) {
+			case "pending":
+				return "bg-yellow-500";
+			case "paid":
+				return "bg-green-500";
+			case "overdue":
+				return "bg-red-500";
+			default:
+				return "bg-gray-500";
+		}
+	};
+
 	const getStatusBadge = (status: string) => {
 		const statusMap: Record<string, { color: string; icon: React.ReactNode }> =
 			{
@@ -279,6 +292,46 @@ export default function LoanDetailPage() {
 								<Table>
 									<TableHeader>
 										<TableRow>
+											<TableHead>Due Date</TableHead>
+											<TableHead>Amount</TableHead>
+											<TableHead>Status</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{loan.loanRepayments.map((repayment) => (
+											<TableRow key={repayment.id}>
+												<TableCell>
+													{new Date(
+														repayment.repaymentDate
+													).toLocaleDateString()}
+												</TableCell>
+												<TableCell>
+													ETB {Number(repayment.amount).toFixed(2)}
+												</TableCell>
+												<TableCell>
+													{/* <Badge className={getStatusColor(repayment.status)}>
+													{repayment.status}
+												</Badge> */}
+												</TableCell>
+											</TableRow>
+										))}
+									</TableBody>
+								</Table>
+							)}
+						</CardContent>
+						{/* <CardContent>
+							{loan.loanRepayments.length === 0 ? (
+								<div className="text-center py-6">
+									<CalendarClock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+									<p className="text-muted-foreground">
+										No repayment schedule available yet. This will be generated
+										once your loan is disbursed.
+									</p>
+								</div>
+							) : (
+								<Table>
+									<TableHeader>
+										<TableRow>
 											<TableHead>Date</TableHead>
 											<TableHead>Amount</TableHead>
 											<TableHead>Reference</TableHead>
@@ -309,7 +362,7 @@ export default function LoanDetailPage() {
 									</TableBody>
 								</Table>
 							)}
-						</CardContent>
+						</CardContent> */}
 						<CardFooter>
 							<Link href="/member/loans/calculator">
 								<Button variant="outline">
@@ -429,6 +482,38 @@ export default function LoanDetailPage() {
 						</CardFooter>
 					</Card>
 				</TabsContent>
+
+				{/* <Card>
+					<CardHeader>
+						<CardTitle>Repayment Schedule</CardTitle>
+					</CardHeader>
+					<CardContent>
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Due Date</TableHead>
+									<TableHead>Amount</TableHead>
+									<TableHead>Status</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{loanDetail.loanRepayments.map((repayment) => (
+									<TableRow key={repayment.id}>
+										<TableCell>
+											{new Date(repayment.repaymentDate).toLocaleDateString()}
+										</TableCell>
+										<TableCell>${repayment.amount.toFixed(2)}</TableCell>
+										<TableCell>
+											<Badge className={getStatusColor(repayment.status)}>
+												{repayment.status}
+											</Badge>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</CardContent>
+				</Card> */}
 			</Tabs>
 		</div>
 	);

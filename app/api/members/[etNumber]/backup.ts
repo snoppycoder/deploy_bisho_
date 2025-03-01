@@ -10,8 +10,15 @@ export async function GET(
 	if (!session) {
 		return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 	}
+	// if (!session || session.role !== "MEMBER") {
+	// 	return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	// }
 
 	const etNumber = Number.parseInt(params.etNumber, 10);
+
+	// if (session.etNumber !== etNumber) {
+	// 	return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+	// }
 
 	try {
 		const member = await prisma.member.findUnique({
@@ -20,17 +27,21 @@ export async function GET(
 				balance: true,
 				savings: {
 					orderBy: { savingsDate: "desc" },
+					take: 5,
 				},
 				loans: {
 					include: {
 						loanRepayments: {
 							orderBy: { repaymentDate: "desc" },
+							take: 5,
 						},
 					},
 					orderBy: { createdAt: "desc" },
+					take: 5,
 				},
 				transactions: {
 					orderBy: { transactionDate: "desc" },
+					take: 5,
 				},
 			},
 		});
@@ -41,7 +52,7 @@ export async function GET(
 
 		// Calculate total savings
 		const totalSavings = member.savings.reduce(
-			(sum, saving) => sum + Number(saving.amount),
+			(sum, saving) => sum + (saving.amount as any),
 			0
 		);
 
@@ -50,18 +61,14 @@ export async function GET(
 
 		// Calculate active loans
 		const activeLoans = member.loans.filter(
-			(loan) => loan.status === ("ACTIVE" as any)
+			(loan: any) => loan.status === "ACTIVE"
 		).length;
 
-		// Prepare fees
-		const fees = member.transactions.filter((transaction) =>
-			[
-				"MEMBERSHIP_FEE",
-				"REGISTRATION_FEE",
-				"COST_OF_SHARE",
-				"WILLING_DEPOSIT",
-			].includes(transaction.type)
-		);
+		// Calculate next payment
+		const nextPayment = member.loans
+			.flatMap((loan) => loan.loanRepayments)
+			// .filter((repayment) => repayment.status === "PENDING")
+			.sort((a, b) => a.repaymentDate.getTime() - b.repaymentDate.getTime())[0];
 
 		return NextResponse.json({
 			member: {
@@ -69,7 +76,7 @@ export async function GET(
 				totalSavings,
 				totalContributions,
 				activeLoans,
-				fees,
+				nextPayment,
 			},
 		});
 	} catch (error) {

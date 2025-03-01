@@ -37,46 +37,43 @@ interface MemberDetails {
 		willingDeposit: number;
 	};
 	totalContribution: number;
-	kycInfo: {
-		email: string;
-		phone: string;
-		division: string;
-		department: string;
-		section: string;
-		group: string;
-	};
-	ledger: {
-		savings: Array<{
+	email: string;
+	phone: string;
+	division: string;
+	department: string;
+	section: string;
+	group: string;
+	savings: Array<{
+		id: number;
+		amount: number;
+		savingsDate: string;
+	}>;
+	fees: Array<{
+		id: number;
+		type: string;
+		amount: number;
+		transactionDate: string;
+	}>;
+	loans: Array<{
+		id: number;
+		amount: number;
+		interestRate: number;
+		tenureMonths: number;
+		status: string;
+		createdAt: string;
+		repayments: Array<{
 			id: number;
 			amount: number;
-			savingsDate: string;
-		}>;
-		fees: Array<{
-			id: number;
-			type: string;
-			amount: number;
-			transactionDate: string;
-		}>;
-		loans: Array<{
-			id: number;
-			amount: number;
-			interestRate: number;
-			tenureMonths: number;
+			repaymentDate: string;
 			status: string;
-			createdAt: string;
-			repayments: Array<{
-				id: number;
-				amount: number;
-				repaymentDate: string;
-			}>;
 		}>;
-		otherTransactions: Array<{
-			id: number;
-			type: string;
-			amount: number;
-			transactionDate: string;
-		}>;
-	};
+	}>;
+	transactions: Array<{
+		id: number;
+		type: string;
+		amount: number;
+		transactionDate: string;
+	}>;
 }
 
 function MemberDetailPage() {
@@ -139,10 +136,12 @@ function MemberDetailPage() {
 	const getStatusColor = (status: string) => {
 		switch (status.toLowerCase()) {
 			case "active":
+			case "paid":
 				return "bg-green-500";
 			case "pending":
 				return "bg-yellow-500";
 			case "closed":
+			case "overdue":
 				return "bg-red-500";
 			default:
 				return "bg-gray-500";
@@ -193,37 +192,37 @@ function MemberDetailPage() {
 							<div>
 								<p className="text-sm font-medium text-gray-500">Email</p>
 								<p className="text-lg font-semibold">
-									{memberDetails.kycInfo.email}
+									{memberDetails.email || "N/A"}
 								</p>
 							</div>
 							<div>
 								<p className="text-sm font-medium text-gray-500">Phone</p>
 								<p className="text-lg font-semibold">
-									{memberDetails.kycInfo.phone}
+									{memberDetails.phone || "N/A"}
 								</p>
 							</div>
 							<div>
 								<p className="text-sm font-medium text-gray-500">Division</p>
 								<p className="text-lg font-semibold">
-									{memberDetails.kycInfo.division}
+									{memberDetails.division || "N/A"}
 								</p>
 							</div>
 							<div>
 								<p className="text-sm font-medium text-gray-500">Department</p>
 								<p className="text-lg font-semibold">
-									{memberDetails.kycInfo.department}
+									{memberDetails.department || "N/A"}
 								</p>
 							</div>
 							<div>
 								<p className="text-sm font-medium text-gray-500">Section</p>
 								<p className="text-lg font-semibold">
-									{memberDetails.kycInfo.section}
+									{memberDetails.section || "N/A"}
 								</p>
 							</div>
 							<div>
 								<p className="text-sm font-medium text-gray-500">Group</p>
 								<p className="text-lg font-semibold">
-									{memberDetails.kycInfo.group}
+									{memberDetails.group || "N/A"}
 								</p>
 							</div>
 						</div>
@@ -249,7 +248,7 @@ function MemberDetailPage() {
 									Total Contributions
 								</p>
 								<p className="text-2xl font-bold text-blue-600">
-									{formatCurrency(memberDetails.totalContribution)}
+									{formatCurrency(memberDetails.balance.totalContributions)}
 								</p>
 							</div>
 							<div>
@@ -294,13 +293,45 @@ function MemberDetailPage() {
 					<CardTitle>Member Ledger</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<Tabs defaultValue="savings" className="space-y-4">
+					<Tabs defaultValue="all" className="space-y-4">
 						<TabsList>
+							<TabsTrigger value="all">All Transactions</TabsTrigger>
 							<TabsTrigger value="savings">Savings</TabsTrigger>
 							<TabsTrigger value="fees">Fees</TabsTrigger>
 							<TabsTrigger value="loans">Loans</TabsTrigger>
-							<TabsTrigger value="transactions">All Transactions</TabsTrigger>
 						</TabsList>
+						<TabsContent value="all">
+							<Table>
+								<TableHeader>
+									<TableRow>
+										<TableHead>Date</TableHead>
+										<TableHead>Type</TableHead>
+										<TableHead>Amount</TableHead>
+									</TableRow>
+								</TableHeader>
+								<TableBody>
+									{memberDetails.transactions
+										.sort(
+											(a, b) =>
+												new Date(b.transactionDate).getTime() -
+												new Date(a.transactionDate).getTime()
+										)
+										.map((transaction) => (
+											<TableRow key={transaction.id}>
+												<TableCell>
+													{new Date(
+														transaction.transactionDate
+													).toLocaleDateString()}
+												</TableCell>
+												<TableCell>{transaction.type}</TableCell>
+												<TableCell>
+													{formatCurrency(transaction.amount)}
+												</TableCell>
+											</TableRow>
+										))}
+								</TableBody>
+							</Table>
+						</TabsContent>
 						<TabsContent value="savings">
 							<Table>
 								<TableHeader>
@@ -310,7 +341,7 @@ function MemberDetailPage() {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{memberDetails.ledger.savings.map((saving) => (
+									{memberDetails.savings.map((saving) => (
 										<TableRow key={saving.id}>
 											<TableCell>
 												{new Date(saving.savingsDate).toLocaleDateString()}
@@ -331,7 +362,7 @@ function MemberDetailPage() {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{memberDetails.ledger.fees.map((fee) => (
+									{memberDetails.fees.map((fee) => (
 										<TableRow key={fee.id}>
 											<TableCell>
 												{new Date(fee.transactionDate).toLocaleDateString()}
@@ -344,7 +375,7 @@ function MemberDetailPage() {
 							</Table>
 						</TabsContent>
 						<TabsContent value="loans">
-							{memberDetails.ledger.loans.map((loan) => (
+							{memberDetails.loans.map((loan) => (
 								<Card key={loan.id} className="mb-4">
 									<CardHeader>
 										<div className="flex justify-between items-center">
@@ -390,6 +421,7 @@ function MemberDetailPage() {
 												<TableRow>
 													<TableHead>Date</TableHead>
 													<TableHead>Amount</TableHead>
+													<TableHead>Status</TableHead>
 												</TableRow>
 											</TableHeader>
 											<TableBody>
@@ -403,6 +435,12 @@ function MemberDetailPage() {
 														<TableCell>
 															{formatCurrency(repayment.amount)}
 														</TableCell>
+														<TableCell>
+															<Badge
+																className={getStatusColor(repayment.status)}>
+																{repayment.status}
+															</Badge>
+														</TableCell>
 													</TableRow>
 												))}
 											</TableBody>
@@ -410,43 +448,6 @@ function MemberDetailPage() {
 									</CardContent>
 								</Card>
 							))}
-						</TabsContent>
-						<TabsContent value="transactions">
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead>Date</TableHead>
-										<TableHead>Type</TableHead>
-										<TableHead>Amount</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody>
-									{[
-										...memberDetails.ledger.savings,
-										...memberDetails.ledger.fees,
-										...memberDetails.ledger.otherTransactions,
-									]
-										.sort(
-											(a: any, b: any) =>
-												new Date(b.savingsDate || b.transactionDate).getTime() -
-												new Date(a.savingsDate || a.transactionDate).getTime()
-										)
-										.map((transaction: any) => (
-											<TableRow key={transaction.id}>
-												<TableCell>
-													{new Date(
-														transaction.savingsDate ||
-															transaction.transactionDate
-													).toLocaleDateString()}
-												</TableCell>
-												<TableCell>{transaction.type || "Savings"}</TableCell>
-												<TableCell>
-													{formatCurrency(transaction.amount)}
-												</TableCell>
-											</TableRow>
-										))}
-								</TableBody>
-							</Table>
 						</TabsContent>
 					</Tabs>
 				</CardContent>

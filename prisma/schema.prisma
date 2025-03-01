@@ -125,12 +125,16 @@ model LoanApprovalLog {
   updatedAt        DateTime           @updatedAt
 }
 
+
 model LoanDocument {
   id               Int          @id @default(autoincrement())
   loanId           Int
   uploadedByUserId Int
-  documentUrl      String
   documentType     DocumentType
+  documentContent  Bytes        // Field to store file content
+  fileName         String       // Field to store original file name
+  mimeType         String       // Field to store file type
+  documentUrl      String       // Keep this field, but we'll use it differently
   uploadDate       DateTime     @default(now())
   loan             Loan         @relation(fields: [loanId], references: [id])
   user             User         @relation(fields: [uploadedByUserId], references: [id])

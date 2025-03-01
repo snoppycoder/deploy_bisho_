@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
 	Card,
 	CardContent,
@@ -11,7 +12,47 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AreaChart, BarChart, LineChart } from "@/components/ui/chart";
 import { Users, CreditCard, DollarSign, TrendingUp } from "lucide-react";
 
+interface DashboardData {
+	totalMembers: number;
+	activeLoanCount: number;
+	totalSavings: number;
+	pendingApprovals: number;
+	loanStatusDistribution: { name: string; value: number }[];
+}
+
 export default function DashboardPage() {
+	const [dashboardData, setDashboardData] = useState<DashboardData | null>(
+		null
+	);
+
+	useEffect(() => {
+		const fetchDashboardData = async () => {
+			try {
+				const response = await fetch("/api/dashboard");
+				if (!response.ok) {
+					throw new Error("Failed to fetch dashboard data");
+				}
+				const data = await response.json();
+				setDashboardData(data);
+			} catch (error) {
+				console.error("Error fetching dashboard data:", error);
+			}
+		};
+
+		fetchDashboardData();
+	}, []);
+
+	const formatCurrency = (amount: number) => {
+		return new Intl.NumberFormat("et-ET", {
+			style: "currency",
+			currency: "ETB",
+		}).format(amount);
+	};
+
+	if (!dashboardData) {
+		return <div>Loading...</div>;
+	}
+
 	return (
 		<div className="flex flex-col gap-5">
 			<h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
@@ -23,8 +64,10 @@ export default function DashboardPage() {
 						<Users className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">3</div>
-						<p className="text-xs text-muted-foreground">+2 from last month</p>
+						<div className="text-2xl font-bold">
+							{dashboardData.totalMembers}
+						</div>
+						{/* You might want to calculate the difference from last month here */}
 					</CardContent>
 				</Card>
 				<Card>
@@ -33,8 +76,10 @@ export default function DashboardPage() {
 						<CreditCard className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">2</div>
-						<p className="text-xs text-muted-foreground">+1 from last month</p>
+						<div className="text-2xl font-bold">
+							{dashboardData.activeLoanCount}
+						</div>
+						{/* You might want to calculate the difference from last month here */}
 					</CardContent>
 				</Card>
 				<Card>
@@ -43,10 +88,10 @@ export default function DashboardPage() {
 						<DollarSign className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">$3,000.00</div>
-						<p className="text-xs text-muted-foreground">
-							+$1,000.00 from last month
-						</p>
+						<div className="text-2xl font-bold">
+							{formatCurrency(dashboardData.totalSavings)}
+						</div>
+						{/* You might want to calculate the difference from last month here */}
 					</CardContent>
 				</Card>
 				<Card>
@@ -57,8 +102,10 @@ export default function DashboardPage() {
 						<TrendingUp className="h-4 w-4 text-muted-foreground" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">1</div>
-						<p className="text-xs text-muted-foreground">Same as last month</p>
+						<div className="text-2xl font-bold">
+							{dashboardData.pendingApprovals}
+						</div>
+						{/* You might want to calculate the difference from last month here */}
 					</CardContent>
 				</Card>
 			</div>
@@ -103,14 +150,7 @@ export default function DashboardPage() {
 							</CardHeader>
 							<CardContent>
 								<BarChart
-									data={[
-										{ name: "Pending", value: 1 },
-										{ name: "Verified", value: 0 },
-										{ name: "Approved", value: 0 },
-										{ name: "Disbursed", value: 1 },
-										{ name: "Repaid", value: 0 },
-										{ name: "Rejected", value: 0 },
-									]}
+									data={dashboardData.loanStatusDistribution}
 									index="name"
 									categories={["value"]}
 									colors={["#2563eb"]}
@@ -142,7 +182,7 @@ export default function DashboardPage() {
 								index="name"
 								categories={["amount"]}
 								colors={["#2563eb"]}
-								valueFormatter={(value: number) => `$${value}`}
+								valueFormatter={(value: number) => formatCurrency(value)}
 								className="h-[300px]"
 							/>
 						</CardContent>
@@ -167,7 +207,7 @@ export default function DashboardPage() {
 								index="name"
 								categories={["amount"]}
 								colors={["#16a34a"]}
-								valueFormatter={(value: number) => `$${value}`}
+								valueFormatter={(value: number) => formatCurrency(value)}
 								className="h-[300px]"
 							/>
 						</CardContent>

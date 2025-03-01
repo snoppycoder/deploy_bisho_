@@ -21,6 +21,15 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/lib/auth-provider";
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 interface LoanDetail {
 	id: number;
@@ -33,6 +42,8 @@ interface LoanDetail {
 	member: {
 		name: string;
 		etNumber: number;
+		email: string;
+		phone: string;
 	};
 	approvalLogs: Array<{
 		id: number;
@@ -52,6 +63,13 @@ interface LoanDetail {
 		repaymentDate: string;
 		status: string;
 	}>;
+	loanDocuments: Array<{
+		id: number;
+		documentType: string;
+		documentUrl: string;
+		fileName: string;
+		uploadDate: string;
+	}>;
 }
 
 export default function IndividualLoanDetailPage() {
@@ -59,6 +77,7 @@ export default function IndividualLoanDetailPage() {
 	const [newStatus, setNewStatus] = useState<string>("");
 	const [comments, setComments] = useState<string>("");
 	const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+	const [selectedDocument, setSelectedDocument] = useState<string | null>(null);
 	const params = useParams();
 	const router = useRouter();
 	const { toast } = useToast();
@@ -121,9 +140,59 @@ export default function IndividualLoanDetailPage() {
 		}
 	};
 
+	const getStatusColor = (status: string) => {
+		return "bg-yellow-500";
+		// switch (status.toLowerCase()) {
+		// 	case "pending":
+		// 		return "bg-yellow-500";
+		// 	case "approved":
+		// 		return "bg-green-500";
+		// 	case "rejected":
+		// 		return "bg-red-500";
+		// 	case "disbursed":
+		// 		return "bg-blue-500";
+		// 	default:
+		// 		return "bg-gray-500";
+		// }
+	};
+
 	if (!loanDetail) {
 		return <div>Loading...</div>;
 	}
+
+	const renderRepaymentSchedule = () => (
+		<Card>
+			<CardHeader>
+				<CardTitle>Repayment Schedule</CardTitle>
+			</CardHeader>
+			<CardContent>
+				<Table>
+					<TableHeader>
+						<TableRow>
+							<TableHead>Due Date</TableHead>
+							<TableHead>Amount</TableHead>
+							<TableHead>Status</TableHead>
+						</TableRow>
+					</TableHeader>
+					<TableBody>
+						{loanDetail.loanRepayments.map((repayment) => (
+							<TableRow key={repayment.id}>
+								<TableCell>
+									{new Date(repayment.repaymentDate).toLocaleDateString()}
+								</TableCell>
+								<TableCell>${Number(repayment.amount).toFixed(2)}</TableCell>
+								<TableCell>
+									<Badge className={getStatusColor(repayment.status)}>
+										{repayment.status}
+									</Badge>
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</CardContent>
+		</Card>
+	);
 
 	return (
 		<div className="space-y-6">
@@ -146,6 +215,14 @@ export default function IndividualLoanDetailPage() {
 							<p>{loanDetail.member.etNumber}</p>
 						</div>
 						<div>
+							<h3 className="font-semibold">Email</h3>
+							<p>{loanDetail.member.email}</p>
+						</div>
+						<div>
+							<h3 className="font-semibold">Phone</h3>
+							<p>{loanDetail.member.phone}</p>
+						</div>
+						<div>
 							<h3 className="font-semibold">Loan Amount</h3>
 							<p>${Number(loanDetail.amount).toFixed(2)}</p>
 						</div>
@@ -159,7 +236,9 @@ export default function IndividualLoanDetailPage() {
 						</div>
 						<div>
 							<h3 className="font-semibold">Status</h3>
-							<p>{loanDetail.status}</p>
+							<Badge className={getStatusColor(loanDetail.status)}>
+								{loanDetail.status}
+							</Badge>
 						</div>
 						<div>
 							<h3 className="font-semibold">Created At</h3>
@@ -168,6 +247,57 @@ export default function IndividualLoanDetailPage() {
 					</div>
 				</CardContent>
 			</Card>
+
+			<Card>
+				<CardHeader>
+					<CardTitle>Loan Documents</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>Document Type</TableHead>
+								<TableHead>File Name</TableHead>
+								<TableHead>Upload Date</TableHead>
+								<TableHead>Action</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{loanDetail.loanDocuments.map((doc) => (
+								<TableRow key={doc.id}>
+									<TableCell>{doc.documentType}</TableCell>
+									<TableCell>{doc.fileName}</TableCell>
+									<TableCell>
+										{new Date(doc.uploadDate).toLocaleString()}
+									</TableCell>
+									<TableCell>
+										<Button
+											onClick={() => setSelectedDocument(doc.documentUrl)}>
+											View
+										</Button>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</CardContent>
+			</Card>
+
+			<Dialog
+				open={!!selectedDocument}
+				onOpenChange={() => setSelectedDocument(null)}>
+				<DialogContent className="max-w-4xl">
+					<DialogHeader>
+						<DialogTitle>Document Viewer</DialogTitle>
+					</DialogHeader>
+					{selectedDocument && (
+						<iframe
+							src={selectedDocument}
+							className="w-full h-[600px]"
+							title="Document Viewer"></iframe>
+					)}
+				</DialogContent>
+			</Dialog>
 
 			<Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
 				<DialogTrigger asChild>
@@ -204,55 +334,38 @@ export default function IndividualLoanDetailPage() {
 					<CardTitle>Approval Logs</CardTitle>
 				</CardHeader>
 				<CardContent>
-					<ul className="space-y-4">
-						{loanDetail.approvalLogs.map((log) => (
-							<li key={log.id} className="border-b pb-2">
-								<p>
-									<strong>Approved By:</strong> {log.user.name}
-								</p>
-								<p>
-									<strong>Role:</strong> {log.role}
-								</p>
-								<p>
-									<strong>Status:</strong> {log.status}
-								</p>
-								<p>
-									<strong>Comments:</strong> {log.comments}
-								</p>
-								<p>
-									<strong>Date:</strong>{" "}
-									{new Date(log.approvalDate).toLocaleString()}
-								</p>
-							</li>
-						))}
-					</ul>
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>Approved By</TableHead>
+								<TableHead>Role</TableHead>
+								<TableHead>Status</TableHead>
+								<TableHead>Comments</TableHead>
+								<TableHead>Date</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{loanDetail.approvalLogs.map((log) => (
+								<TableRow key={log.id}>
+									<TableCell>{log.user.name}</TableCell>
+									<TableCell>{log.role}</TableCell>
+									<TableCell>
+										<Badge className={getStatusColor(log.status)}>
+											{log.status}
+										</Badge>
+									</TableCell>
+									<TableCell>{log.comments}</TableCell>
+									<TableCell>
+										{new Date(log.approvalDate).toLocaleString()}
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
 				</CardContent>
 			</Card>
 
-			<Card>
-				<CardHeader>
-					<CardTitle>Repayment Schedule</CardTitle>
-				</CardHeader>
-				<CardContent>
-					<ul className="space-y-4">
-						{loanDetail.loanRepayments.map((repayment) => (
-							<li key={repayment.id} className="border-b pb-2">
-								<p>
-									<strong>Amount:</strong> $
-									{Number(repayment.amount).toFixed(2)}
-								</p>
-								<p>
-									<strong>Due Date:</strong>{" "}
-									{new Date(repayment.repaymentDate).toLocaleDateString()}
-								</p>
-								<p>
-									<strong>Status:</strong> {repayment.status}
-								</p>
-							</li>
-						))}
-					</ul>
-				</CardContent>
-			</Card>
+			{renderRepaymentSchedule()}
 		</div>
 	);
 }
