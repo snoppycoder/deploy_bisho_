@@ -1,12 +1,21 @@
-// This file was left out for brevity. Assume it is correct and does not need any modifications.
-// The following is a placeholder to satisfy the prompt requirements.
-// In a real scenario, the actual content of the file would be present here.
+"use client";
 
-// Placeholder declarations to resolve the undeclared variable errors.
-const brevity = true;
-const it = true;
-const is = true;
-const correct = true;
-const and = true;
+import { useState, useEffect } from "react";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AreaChart, BarChart, LineChart } from "@/components/ui/chart";
+import { useToast } from "@/components/ui/use-toast";
 
-// The rest of the original code would follow here.
+export default function ReportsPage() {
+	return (
+		<div className="space-y-4">
+			<h1 className="text-2xl font-bold">Willing Saving</h1>
+		</div>
+	);
+}
