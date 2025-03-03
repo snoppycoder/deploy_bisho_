@@ -1,125 +1,143 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import type React from "react";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import {
 	Card,
 	CardContent,
 	CardDescription,
-	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
-import { useToast } from "@/components/ui/use-toast";
+import { Label } from "@/components/ui/label";
 
-interface MembershipRequest {
-	id: number;
-	type: string;
-	status: string;
-	createdAt: string;
-}
-
-export default function MembershipRequestsPage() {
-	const [requests, setRequests] = useState<MembershipRequest[]>([]);
+export default function MembershipRequestPage() {
+	const [formData, setFormData] = useState({
+		name: "",
+		email: "",
+		phone: "",
+		etNumber: "",
+		department: "",
+	});
+	const router = useRouter();
 	const { toast } = useToast();
 
-	useEffect(() => {
-		fetchMembershipRequests();
-	}, []);
-
-	const fetchMembershipRequests = async () => {
-		try {
-			const response = await fetch("/api/member/membership-requests");
-			if (!response.ok) {
-				throw new Error("Failed to fetch membership requests");
-			}
-			const data = await response.json();
-			setRequests(data);
-		} catch (error) {
-			console.error("Error fetching membership requests:", error);
-			toast({
-				title: "Error",
-				description: "Failed to load membership requests. Please try again.",
-				variant: "destructive",
-			});
-		}
+	const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const { name, value } = e.target;
+		setFormData((prev) => ({ ...prev, [name]: value }));
 	};
 
-	const handleNewRequest = async () => {
+	const handleSubmit = async (e: React.FormEvent) => {
+		e.preventDefault();
 		try {
-			const response = await fetch("/api/member/membership-requests", {
+			const response = await fetch("/api/membership/request", {
 				method: "POST",
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ type: "NEW_MEMBERSHIP" }),
+				body: JSON.stringify(formData),
 			});
 
-			if (!response.ok) {
-				throw new Error("Failed to create new membership request");
+			if (response.ok) {
+				toast({
+					title: "Membership request submitted successfully",
+					description: "An admin will review your request shortly.",
+				});
+				router.push("/member/membership");
+			} else {
+				throw new Error("Failed to submit membership request");
 			}
-
-			toast({
-				title: "Success",
-				description: "New membership request submitted successfully.",
-			});
-
-			fetchMembershipRequests();
 		} catch (error) {
-			console.error("Error creating new membership request:", error);
+			console.error("Error submitting membership request:", error);
 			toast({
 				title: "Error",
-				description:
-					"Failed to submit new membership request. Please try again.",
+				description: "Failed to submit membership request. Please try again.",
 				variant: "destructive",
 			});
 		}
 	};
 
 	return (
-		<div className="space-y-6">
-			<h1 className="text-3xl font-bold">Membership Requests</h1>
-			<Card>
-				<CardHeader>
-					<CardTitle>Your Membership Requests</CardTitle>
-					<CardDescription>
-						View and manage your membership requests
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<Table>
-						<TableHeader>
-							<TableRow>
-								<TableHead>Request Type</TableHead>
-								<TableHead>Status</TableHead>
-								<TableHead>Date</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{requests.map((request) => (
-								<TableRow key={request.id}>
-									<TableCell>{request.type}</TableCell>
-									<TableCell>{request.status}</TableCell>
-									<TableCell>
-										{new Date(request.createdAt).toLocaleDateString()}
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</CardContent>
-				<CardFooter>
-					<Button onClick={handleNewRequest}>New Membership Request</Button>
-				</CardFooter>
-			</Card>
-		</div>
+		<Card className="max-w-2xl mx-auto">
+			<CardHeader>
+				<CardTitle>Membership Registration Request</CardTitle>
+				<CardDescription>
+					Please fill out the form below to request membership registration.
+				</CardDescription>
+			</CardHeader>
+			<CardContent>
+				<form onSubmit={handleSubmit} className="space-y-4">
+					<div>
+						<Label htmlFor="name">Full Name</Label>
+						<Input
+							id="name"
+							name="name"
+							value={formData.name}
+							onChange={handleInputChange}
+							required
+						/>
+					</div>
+					<div>
+						<Label htmlFor="email">Email</Label>
+						<Input
+							id="email"
+							name="email"
+							type="email"
+							value={formData.email}
+							onChange={handleInputChange}
+							required
+						/>
+					</div>
+					<div>
+						<Label htmlFor="phone">Phone Number</Label>
+						<Input
+							id="phone"
+							name="phone"
+							value={formData.phone}
+							onChange={handleInputChange}
+							required
+						/>
+					</div>
+					<div>
+						<Label htmlFor="etNumber">Location</Label>
+						<Input
+							id="etNumber"
+							name="etNumber"
+							value={formData.etNumber}
+							onChange={handleInputChange}
+							required
+						/>
+					</div>
+					<div>
+						<Label htmlFor="etNumber">Division</Label>
+						<Input
+							id="etNumber"
+							name="etNumber"
+							value={formData.etNumber}
+							onChange={handleInputChange}
+							required
+						/>
+					</div>
+					<div>
+						<Label htmlFor="department">Department</Label>
+						<Input
+							id="department"
+							name="department"
+							value={formData.department}
+							onChange={handleInputChange}
+							required
+						/>
+					</div>
+					<Button type="submit" className="w-full">
+						Submit Membership Request
+					</Button>
+				</form>
+			</CardContent>
+		</Card>
 	);
 }

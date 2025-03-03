@@ -73,26 +73,28 @@ export async function GET(request: NextRequest) {
 			},
 		});
 
+		// Update the formattedMembers mapping function to correctly filter transactions by type
 		const formattedMembers = members.map((member) => {
-			const currentMonthSavings = member.savings[0]?.amount || 0; // Get the most recent saving for the current month
-			const totalSavings = member.savings.reduce(
-				(sum, saving) => sum + Number(saving.amount),
-				0
-			);
-			const totalContributionsSaving = member.transactions.filter(
+			// Find the most recent transaction for each type within the month
+			const savingsTransaction = member.transactions.find(
 				(t) => t.type === "SAVINGS"
 			);
+			const membershipFeeTransaction = member.transactions.find(
+				(t) => t.type === "MEMBERSHIP_FEE"
+			);
+			const willingDepositTransaction = member.transactions.find(
+				(t) => t.type === "WILLING_DEPOSIT"
+			);
+			const loanRepaymentTransaction = member.transactions.find(
+				(t) => t.type === "LOAN_REPAYMENT"
+			);
 
-			const totalContributions = member.transactions
-				.filter((t) => t.type === "SAVINGS" || t.type === "LOAN_REPAYMENT")
-				.reduce((sum, t) => sum + Number(t.amount), 0);
-			const loanRepayments = member.loans.flatMap(
-				(loan) => loan.loanRepayments
-			);
-			const totalLoanRepayments = loanRepayments.reduce(
-				(sum, repayment) => sum + Number(repayment.amount),
-				0
-			);
+			// Calculate total contributions (sum of savings and loan repayments)
+			const totalContributions =
+				(savingsTransaction ? Number(savingsTransaction.amount) : 0) +
+				(loanRepaymentTransaction
+					? Number(loanRepaymentTransaction.amount)
+					: 0);
 
 			return {
 				id: member.id,
@@ -105,11 +107,19 @@ export async function GET(request: NextRequest) {
 				group: member.group,
 				effectiveDate: startDate.toISOString(),
 				balance: {
-					totalSavings: Number(totalContributionsSaving[0].amount),
+					totalSavings: savingsTransaction
+						? Number(savingsTransaction.amount)
+						: 0,
 					totalContributions: totalContributions,
-					membershipFee: member.balance?.membershipFee || 0,
-					willingDeposit: member.balance?.willingDeposit || 0,
-					loanRepayments: totalLoanRepayments,
+					membershipFee: membershipFeeTransaction
+						? Number(membershipFeeTransaction.amount)
+						: 0,
+					willingDeposit: willingDepositTransaction
+						? Number(willingDepositTransaction.amount)
+						: 0,
+					loanRepayments: loanRepaymentTransaction
+						? Number(loanRepaymentTransaction.amount)
+						: 0,
 				},
 			};
 		});
@@ -133,81 +143,86 @@ export async function GET(request: NextRequest) {
 // 	const url = new URL(request.url);
 // 	const effectiveDateStr = url.searchParams.get("effectiveDate");
 
-// 	let effectiveDate: Date | null = null;
-// 	let startDate: Date | null = null;
-// 	let endDate: Date | null = null;
+// 	let effectiveDate: Date;
+// 	let startDate: Date;
+// 	let endDate: Date;
 
 // 	if (effectiveDateStr) {
 // 		effectiveDate = parseISO(effectiveDateStr);
-// 		startDate = startOfMonth(effectiveDate);
-// 		endDate = endOfMonth(effectiveDate);
+// 	} else {
+// 		effectiveDate = new Date(); // Use current date if no effectiveDate is provided
 // 	}
+
+// 	startDate = startOfMonth(effectiveDate);
+// 	endDate = endOfMonth(effectiveDate);
+
+// 	console.log("API: Effective Date:", effectiveDate.toISOString()); // Debug log
+// 	console.log("API: Start Date:", startDate.toISOString()); // Debug log
+// 	console.log("API: End Date:", endDate.toISOString()); // Debug log
 
 // 	try {
 // 		const members = await prisma.member.findMany({
 // 			include: {
 // 				balance: true,
 // 				savings: {
-// 					where: effectiveDate
-// 						? {
-// 								savingsDate: {
-// 									gte: startDate,
-// 									lte: endDate,
-// 								},
-// 						  }
-// 						: undefined,
+// 					where: {
+// 						savingsDate: {
+// 							gte: startDate,
+// 							lte: endDate,
+// 						},
+// 					},
 // 					orderBy: { savingsDate: "desc" },
 // 				},
 // 				transactions: {
-// 					where: effectiveDate
-// 						? {
-// 								transactionDate: {
-// 									gte: startDate,
-// 									lte: endDate,
-// 								},
-// 						  }
-// 						: undefined,
+// 					where: {
+// 						transactionDate: {
+// 							gte: startDate,
+// 							lte: endDate,
+// 						},
+// 					},
 // 					orderBy: { transactionDate: "desc" },
 // 				},
 // 				loans: {
-// 					where: effectiveDate
-// 						? {
-// 								createdAt: {
-// 									lte: endDate,
-// 								},
-// 						  }
-// 						: undefined,
+// 					where: {
+// 						createdAt: {
+// 							lte: endDate,
+// 						},
+// 					},
 // 					include: {
 // 						loanRepayments: {
-// 							where: effectiveDate
-// 								? {
-// 										repaymentDate: {
-// 											gte: startDate,
-// 											lte: endDate,
-// 										},
-// 								  }
-// 								: undefined,
+// 							where: {
+// 								repaymentDate: {
+// 									gte: startDate,
+// 									lte: endDate,
+// 								},
+// 							},
 // 							orderBy: { repaymentDate: "desc" },
 // 						},
 // 					},
 // 					orderBy: { createdAt: "desc" },
 // 				},
 // 			},
-// 		} as any);
+// 		});
 
-// 		const formattedMembers = members.map((member: any) => {
+// 		const formattedMembers = members.map((member) => {
+// 			const currentMonthSavings = member.savings[0]?.amount || 0; // Get the most recent saving for the current month
 // 			const totalSavings = member.savings.reduce(
-// 				(sum: any, saving: any) => sum + Number(saving.amount),
+// 				(sum, saving) => sum + Number(saving.amount),
 // 				0
 // 			);
+// 			const totalContributionsSaving = member.transactions.filter(
+// 				(t) => t.type === "SAVINGS"
+// 			);
+
 // 			const totalContributions = member.transactions
-// 				.filter((t: any) => t.type === "SAVINGS" || t.type === "LOAN_REPAYMENT")
-// 				.reduce((sum: any, t: any) => sum + Number(t.amount), 0);
+// 				.filter((t) => t.type === "SAVINGS" || t.type === "LOAN_REPAYMENT")
+// 				.reduce((sum, t) => sum + Number(t.amount), 0);
+
 // 			const loanRepayments = member.loans.flatMap(
-// 				(loan: any) => loan.loanRepayments
+// 				(loan) => loan.loanRepayments
 // 			);
 // 			const totalLoanRepayments = loanRepayments.reduce(
-// 				(sum: any, repayment: any) => sum + repayment.amount,
+// 				(sum, repayment) => sum + Number(repayment.amount),
 // 				0
 // 			);
 
@@ -220,9 +235,9 @@ export async function GET(request: NextRequest) {
 // 				department: member.department,
 // 				section: member.section,
 // 				group: member.group,
-// 				effectiveDate: effectiveDate ? effectiveDate.toISOString() : null,
+// 				effectiveDate: startDate.toISOString(),
 // 				balance: {
-// 					totalSavings: totalSavings,
+// 					totalSavings: Number(totalContributionsSaving[0].amount),
 // 					totalContributions: totalContributions,
 // 					membershipFee: member.balance?.membershipFee || 0,
 // 					willingDeposit: member.balance?.willingDeposit || 0,

@@ -41,6 +41,7 @@ interface Loan {
 	tenureMonths: number;
 	status: string;
 	createdAt: string;
+	remainingAmount: number;
 	approvalLogs: {
 		id: number;
 		status: string;
@@ -54,7 +55,17 @@ interface Loan {
 		repaymentDate: string;
 		reference: string | null;
 		sourceType: string;
+		status: string;
 	}[];
+	totalRepaidAmount: number; // Added totalRepaidAmount field
+}
+interface LoanRepayment {
+	id: number;
+	amount: number;
+	repaymentDate: string;
+	reference: string | null;
+	sourceType: string;
+	status: string; // Added status field
 }
 
 export default function MemberLoansPage() {
@@ -130,16 +141,86 @@ export default function MemberLoansPage() {
 		);
 	};
 
+	// const calculateRepaymentProgress = (loan: Loan) => {
+	// 	if (loan.loanRepayments.length === 0) return 0;
+
+	// 	const totalRepaid = loan.loanRepayments.reduce(
+	// 		(sum, repayment) => sum + repayment.amount,
+	// 		0
+	// 	);
+	// 	const progressPercentage = (totalRepaid / loan.amount) * 100;
+
+	// 	return Math.min(progressPercentage, 100);
+	// };
+	// const calculateRepaymentProgress = (loan: Loan) => {
+	// 	const totalRepaid = loan.loanRepayments.reduce((sum, repayment) => {
+	// 		return sum + (repayment.status === "PAID" ? repayment.amount : 0);
+	// 	}, 0);
+	// 	console.log({
+	// 		loan,
+	// 		loanRepayments: loan.loanRepayments,
+	// 		totalRepaid,
+	// 	});
+
+	// 	if (totalRepaid === 0) return 0;
+	// 	const progressPercentage = (totalRepaid / loan.amount) * 100;
+	// 	return Math.min(progressPercentage, 100);
+	// };
+
 	const calculateRepaymentProgress = (loan: Loan) => {
-		if (loan.loanRepayments.length === 0) return 0;
+		if (
+			!loan.loanRepayments ||
+			loan.loanRepayments.length === 0 ||
+			loan.amount <= 0
+		) {
+			return 0;
+		}
 
-		const totalRepaid = loan.loanRepayments.reduce(
-			(sum, repayment) => sum + repayment.amount,
-			0
+		// Convert loan.amount (which is a string) to a number
+		const loanAmount = Number(loan.amount);
+
+		// Ensure that loanAmount is a valid number
+		if (isNaN(loanAmount)) {
+			console.error("Invalid loan amount:", loan.amount);
+			return 0; // If loan amount is invalid, return 0 progress
+		}
+
+		console.log(`Loan Amount: ${loanAmount}`);
+
+		// Calculate the total repaid by converting repayment amounts (which are strings) to numbers
+		const totalRepaid = loan.loanRepayments.reduce((sum, repayment) => {
+			// Convert repayment.amount (which is a string) to a number
+			const repaymentAmount = Number(repayment.amount);
+
+			// Only add the repayment amount if the status is "PAID" and the amount is a valid number
+			if (repayment.status === "PAID" && !isNaN(repaymentAmount)) {
+				console.log(`Repayment Amount (PAID): ${repaymentAmount}`);
+				return sum + repaymentAmount;
+			}
+			return sum;
+		}, 0);
+
+		// Round total repaid to 2 decimal places
+		const totalRepaidRounded = Math.round(totalRepaid * 100) / 100;
+
+		console.log({
+			loan,
+			loanRepayments: loan.loanRepayments,
+			totalRepaid: totalRepaidRounded,
+		});
+
+		// Calculate progress as a percentage
+		const progressPercentage = (totalRepaidRounded / loanAmount) * 100;
+
+		// Round the progress percentage to 2 decimal places and ensure it's between 0 and 100
+		const progressPercentageRounded = Math.min(
+			Math.round(progressPercentage * 100) / 100,
+			100
 		);
-		const progressPercentage = (totalRepaid / loan.amount) * 100;
 
-		return Math.min(progressPercentage, 100);
+		console.log(`Progress Percentage: ${progressPercentageRounded}%`);
+
+		return progressPercentageRounded;
 	};
 
 	const formatCurrency = (amount: number) => {
@@ -155,6 +236,27 @@ export default function MemberLoansPage() {
 			month: "short",
 			day: "numeric",
 		});
+	};
+
+	const getLoanStatusColor = (status: string) => {
+		switch (status) {
+			case "PENDING":
+				return "bg-yellow-100 text-yellow-800";
+			case "APPROVED":
+				return "bg-green-100 text-green-800";
+			case "PAID":
+				return "bg-green-100 text-green-800";
+			case "REJECTED":
+				return "bg-red-100 text-red-800";
+			case "OVERDUE":
+				return "bg-red-100 text-red-800";
+			case "DISBURSED":
+				return "bg-blue-100 text-blue-800";
+			case "COMPLETED":
+				return "bg-gray-100 text-gray-800";
+			default:
+				return "bg-gray-100 text-gray-800";
+		}
 	};
 
 	if (isLoading) {
@@ -254,7 +356,7 @@ export default function MemberLoansPage() {
 													</p>
 												</div>
 											</div>
-
+											{/* 
 											<div className="space-y-2 mb-4">
 												<div className="flex justify-between text-sm">
 													<span>Repayment Progress</span>
@@ -266,6 +368,15 @@ export default function MemberLoansPage() {
 													value={calculateRepaymentProgress(loan)}
 													className="h-2"
 												/>
+											</div> */}
+											<div>
+												<h4 className="font-semibold mb-2">
+													Repayment Progress
+												</h4>
+												<Progress value={calculateRepaymentProgress(loan)} />
+												<p className="text-sm mt-1">
+													{calculateRepaymentProgress(loan)}% Repaid
+												</p>
 											</div>
 
 											{loan.loanRepayments.length > 0 && (
@@ -278,8 +389,9 @@ export default function MemberLoansPage() {
 															<TableRow>
 																<TableHead>Date</TableHead>
 																<TableHead>Amount</TableHead>
-																<TableHead>Reference</TableHead>
+																<TableHead>Note</TableHead>
 																<TableHead>Source</TableHead>
+																<TableHead>Status</TableHead>
 															</TableRow>
 														</TableHeader>
 														<TableBody>
@@ -293,11 +405,21 @@ export default function MemberLoansPage() {
 																		<TableCell>
 																			{formatCurrency(repayment.amount)}
 																		</TableCell>
+																		{/* {JSON.stringify(repayment.status)} */}
 																		<TableCell>
 																			{repayment.reference || "N/A"}
 																		</TableCell>
 																		<TableCell>
-																			{repayment.sourceType}
+																			{repayment.sourceType || "N/A"}
+																		</TableCell>
+
+																		<TableCell>
+																			<Badge
+																				className={getLoanStatusColor(
+																					repayment.status
+																				)}>
+																				{repayment.status}
+																			</Badge>
 																		</TableCell>
 																	</TableRow>
 																))}

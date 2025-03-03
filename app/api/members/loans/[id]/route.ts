@@ -44,6 +44,7 @@ export async function GET(
 						repaymentDate: true,
 						reference: true,
 						sourceType: true,
+						status: true,
 					},
 					orderBy: {
 						repaymentDate: "asc",

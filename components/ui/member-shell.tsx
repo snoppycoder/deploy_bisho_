@@ -79,6 +79,16 @@ export function MemberShell({ children }: MemberShellProps) {
 			icon: FileCheck,
 		},
 		{
+			title: "Willing Deposit Request",
+			href: "/member/willing-deposit/request",
+			icon: PiggyBank,
+		},
+		{
+			title: "Willing Deposit History",
+			href: "/member/willing-deposit/history",
+			icon: FileCheck,
+		},
+		{
 			title: "Reports",
 			href: "/member/reports",
 			icon: BarChart3,

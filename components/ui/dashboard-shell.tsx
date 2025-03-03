@@ -114,6 +114,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
 		// 	],
 		// },
 		{
+			title: "Disburse Loans",
+			href: "/dashboard/loans/disburse",
+			icon: DollarSign,
+			roles: [UserRole.FINANCE_ADMIN],
+		},
+
+		{
 			title: "Approval History",
 			href: "/dashboard/loans/approval-history",
 			icon: History,
@@ -136,12 +143,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 		// 	icon: FileText,
 		// 	roles: [UserRole.BRANCH_MANAGER, UserRole.REGIONAL_MANAGER],
 		// },
-		{
-			title: "Disburse Loans",
-			href: "/dashboard/loans/disburse",
-			icon: DollarSign,
-			roles: [UserRole.FINANCE_ADMIN],
-		},
+
 		{
 			title: "Loan Calculator",
 			href: "/dashboard/loans/calculator",
@@ -168,6 +170,17 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			title: "Loan Approval Dashboard",
 			href: "/dashboard/loans/approval-dashboard",
 			icon: ClipboardList,
+			roles: [
+				UserRole.LOAN_OFFICER,
+				UserRole.BRANCH_MANAGER,
+				UserRole.REGIONAL_MANAGER,
+				UserRole.FINANCE_ADMIN,
+			],
+		},
+		{
+			title: "Membership Requests",
+			href: "/dashboard/membership-requests",
+			icon: Users,
 			roles: [
 				UserRole.LOAN_OFFICER,
 				UserRole.BRANCH_MANAGER,

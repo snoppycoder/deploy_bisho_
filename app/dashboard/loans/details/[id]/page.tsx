@@ -82,6 +82,8 @@ export default function IndividualLoanDetailPage() {
 	const router = useRouter();
 	const { toast } = useToast();
 	const { user } = useAuth();
+	const [documentError, setDocumentError] = useState<string | null>(null);
+	const [isDocumentLoading, setIsDocumentLoading] = useState(false);
 
 	useEffect(() => {
 		fetchLoanDetail();
@@ -141,24 +143,92 @@ export default function IndividualLoanDetailPage() {
 	};
 
 	const getStatusColor = (status: string) => {
-		return "bg-yellow-500";
-		// switch (status.toLowerCase()) {
-		// 	case "pending":
-		// 		return "bg-yellow-500";
-		// 	case "approved":
-		// 		return "bg-green-500";
-		// 	case "rejected":
-		// 		return "bg-red-500";
-		// 	case "disbursed":
-		// 		return "bg-blue-500";
-		// 	default:
-		// 		return "bg-gray-500";
-		// }
+		// return "bg-yellow-500";
+		switch (status.toLowerCase()) {
+			case "pending":
+				return "bg-yellow-500";
+			case "approved":
+				return "bg-green-500";
+			case "rejected":
+				return "bg-red-500";
+			case "disbursed":
+				return "bg-blue-500";
+			default:
+				return "bg-gray-500";
+		}
+		// return
 	};
 
 	if (!loanDetail) {
 		return <div>Loading...</div>;
 	}
+
+	const handleDocumentReview = async (documentUrl: string) => {
+		setIsDocumentLoading(true);
+		setDocumentError(null);
+		try {
+			// Use the full path for local files
+			const fullUrl = documentUrl.startsWith("http")
+				? documentUrl
+				: `/${documentUrl}`;
+			const response = await fetch(
+				`/api/loans/documents/view?url=${encodeURIComponent(fullUrl)}`
+			);
+			if (response.ok) {
+				const blob = await response.blob();
+				const url = URL.createObjectURL(blob);
+				setSelectedDocument(url);
+			} else {
+				throw new Error("Failed to load document");
+			}
+		} catch (error) {
+			console.error("Error loading document:", error);
+			setDocumentError("Failed to load document. Please try again.");
+		} finally {
+			setIsDocumentLoading(false);
+		}
+	};
+
+	const renderDocumentViewer = () => {
+		if (!selectedDocument) return null;
+
+		return (
+			<Dialog
+				open={!!selectedDocument}
+				onOpenChange={() => setSelectedDocument(null)}>
+				<DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+					<DialogHeader>
+						<DialogTitle>Document Viewer</DialogTitle>
+					</DialogHeader>
+					<div className="flex-grow overflow-hidden">
+						{isDocumentLoading ? (
+							<div className="flex items-center justify-center h-full">
+								<div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+							</div>
+						) : documentError ? (
+							<div className="text-center text-red-500 p-4">
+								{documentError}
+							</div>
+						) : (
+							<iframe
+								src={selectedDocument}
+								className="w-full h-full border-0"
+								title="Document Viewer"
+							/>
+						)}
+					</div>
+					<div className="flex justify-end space-x-2 mt-4">
+						<Button variant="outline" onClick={() => setSelectedDocument(null)}>
+							Close
+						</Button>
+						<Button onClick={() => setIsUpdateDialogOpen(true)}>
+							Update Loan Status
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
+		);
+	};
 
 	const renderRepaymentSchedule = () => (
 		<Card>
@@ -272,8 +342,8 @@ export default function IndividualLoanDetailPage() {
 									</TableCell>
 									<TableCell>
 										<Button
-											onClick={() => setSelectedDocument(doc.documentUrl)}>
-											View
+											onClick={() => handleDocumentReview(doc.documentUrl)}>
+											Review
 										</Button>
 									</TableCell>
 								</TableRow>
@@ -283,12 +353,50 @@ export default function IndividualLoanDetailPage() {
 				</CardContent>
 			</Card>
 
-			<Dialog
+			{renderDocumentViewer()}
+
+			{/* <Card>
+				<CardHeader>
+					<CardTitle>Loan Documents</CardTitle>
+				</CardHeader>
+				<CardContent>
+					<Table>
+						<TableHeader>
+							<TableRow>
+								<TableHead>Document Type</TableHead>
+								<TableHead>File Name</TableHead>
+								<TableHead>Upload Date</TableHead>
+								<TableHead>Action</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{loanDetail.loanDocuments.map((doc) => (
+								<TableRow key={doc.id}>
+									<TableCell>{doc.documentType}</TableCell>
+									<TableCell>{doc.fileName}</TableCell>
+									<TableCell>
+										{new Date(doc.uploadDate).toLocaleString()}
+									</TableCell>
+									<TableCell>
+										<Button
+											onClick={() => setSelectedDocument(doc.documentUrl)}>
+											View
+										</Button>
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</CardContent>
+			</Card> */}
+
+			{/* <Dialog
 				open={!!selectedDocument}
 				onOpenChange={() => setSelectedDocument(null)}>
 				<DialogContent className="max-w-4xl">
 					<DialogHeader>
-						<DialogTitle>Document Viewer</DialogTitle>
+						<DialogTitle>Document Viewer_</DialogTitle>
+						{selectedDocument}
 					</DialogHeader>
 					{selectedDocument && (
 						<iframe
@@ -297,7 +405,7 @@ export default function IndividualLoanDetailPage() {
 							title="Document Viewer"></iframe>
 					)}
 				</DialogContent>
-			</Dialog>
+			</Dialog> */}
 
 			<Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
 				<DialogTrigger asChild>

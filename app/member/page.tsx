@@ -142,13 +142,13 @@ export default function MemberDashboardPage() {
 						<div className="text-2xl font-bold">
 							{/* {JSON.stringify(memberData?.loans[0]?.loanRepayments[0]?.amount)} */}
 							ETB{" "}
-							{Number(memberData?.loans[0]?.loanRepayments[0]?.amount).toFixed(
+							{Number(memberData?.loans[1]?.loanRepayments[0]?.amount).toFixed(
 								2
 							) || "0.00"}
 						</div>
 						<p className="text-xs text-muted-foreground">
 							Due on{" "}
-							{memberData?.loans[0]?.loanRepayments[0]?.repaymentDate.split(
+							{memberData?.loans[1]?.loanRepayments[0]?.repaymentDate.split(
 								"T"
 							)[0] || "N/A"}
 						</p>
@@ -164,8 +164,8 @@ export default function MemberDashboardPage() {
 					</CardHeader>
 					<CardContent className="px-2">
 						<AreaChart
-							data={memberData.savings.map((saving) => ({
-								name: saving.savingsDate.split("T")[0],
+							data={memberData.savings.map((saving, index) => ({
+								name: saving.savingsDate.split("T")[index],
 								amount: saving.amount,
 							}))}
 							index="name"

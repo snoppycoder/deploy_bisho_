@@ -34,6 +34,7 @@ export async function GET(req: NextRequest) {
 						repaymentDate: true,
 						reference: true,
 						sourceType: true,
+						status: true,
 					},
 					orderBy: {
 						repaymentDate: "asc",

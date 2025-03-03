@@ -448,6 +448,9 @@ export async function POST(request: NextRequest) {
 						},
 						totalContributions: {
 							increment:
+								memberData["Credit Association Savings"] +
+								memberData["Credit Association Cost of Share"] +
+								memberData["Credit Association Registration Fee"] +
 								memberData["Credit Association Purchases"] +
 								memberData["Credit Association Loan Repayment"],
 						},
@@ -460,6 +463,9 @@ export async function POST(request: NextRequest) {
 						membershipFee: memberData["Credit Association Membership Fee"],
 						willingDeposit: memberData["Credit Association Willing Deposit"],
 						totalContributions:
+							memberData["Credit Association Savings"] +
+							memberData["Credit Association Cost of Share"] +
+							memberData["Credit Association Registration Fee"] +
 							memberData["Credit Association Purchases"] +
 							memberData["Credit Association Loan Repayment"],
 					},
@@ -498,10 +504,10 @@ export async function POST(request: NextRequest) {
 						type: "COST_OF_SHARE",
 						amount: memberData["Credit Association Cost of Share"],
 					},
-					{
-						type: "LOAN_REPAYMENT",
-						amount: memberData["Credit Association Loan Repayment"],
-					},
+					// {
+					// 	type: "LOAN_REPAYMENT",
+					// 	amount: memberData["Credit Association Loan Repayment"],
+					// },
 					{
 						type: "PURCHASE",
 						amount: memberData["Credit Association Purchases"],
@@ -545,11 +551,11 @@ async function handleLoanRepayment(
 	repaymentAmount: number,
 	repaymentDate: Date
 ) {
-	// Find the active (DISBURSED) loan for the member
+	// Find the last DISBURSED loan for the member
 	const activeLoan = await prisma.loan.findFirst({
 		where: {
 			memberId: memberId,
-			status: LoanStatus.DISBURSED,
+			status: LoanApprovalStatus.DISBURSED,
 		},
 		include: {
 			loanRepayments: {
@@ -557,35 +563,49 @@ async function handleLoanRepayment(
 				where: { status: "PENDING" },
 			},
 		},
+		orderBy: {
+			createdAt: "desc", // The most recent DISBURSED loan
+		},
 	});
 
 	if (!activeLoan) {
 		throw new Error("No active loan found for the member");
 	}
 
-	// Find the next pending repayment
-	const nextRepayment = activeLoan.loanRepayments[0];
+	// Find all pending repayments
+	const pendingRepayments = activeLoan.loanRepayments;
 
-	if (!nextRepayment) {
-		throw new Error("No pending repayments found for the active loan");
+	let remainingAmount = repaymentAmount;
+	for (const repayment of pendingRepayments) {
+		if (remainingAmount <= 0) break;
+
+		const amountToApply = Math.min(remainingAmount, repayment.amount);
+
+		// Update the repayment
+		await prisma.loanRepayment.update({
+			where: { id: repayment.id },
+			data: {
+				amount: amountToApply,
+				repaymentDate: repaymentDate,
+				status: "PAID",
+			},
+		});
+
+		remainingAmount -= amountToApply;
+
+		// If there's still an unpaid portion, create a new pending repayment
+		if (amountToApply < repayment.amount) {
+			await prisma.loanRepayment.create({
+				data: {
+					loanId: activeLoan.id,
+					amount: repayment.amount - amountToApply,
+					repaymentDate: repayment.repaymentDate,
+					status: "PENDING",
+					sourceType: "ERP_PAYROLL",
+				},
+			});
+		}
 	}
-
-	// Validate repayment amount
-	if (repaymentAmount < nextRepayment.amount) {
-		throw new Error(
-			`Repayment amount ${repaymentAmount} is less than the expected amount ${nextRepayment.amount}`
-		);
-	}
-
-	// Record the repayment
-	await prisma.loanRepayment.update({
-		where: { id: nextRepayment.id },
-		data: {
-			amount: repaymentAmount,
-			repaymentDate: repaymentDate,
-			status: "PAID",
-		},
-	});
 
 	// Create a transaction record
 	await prisma.transaction.create({
@@ -598,11 +618,18 @@ async function handleLoanRepayment(
 	});
 
 	// Update loan balance
-	const updatedLoanBalance = activeLoan.amount - repaymentAmount;
+	const totalRepaid = await prisma.loanRepayment.aggregate({
+		where: { loanId: activeLoan.id, status: "PAID" },
+		_sum: { amount: true },
+	});
+
+	const updatedLoanBalance =
+		activeLoan.remainingAmount - (totalRepaid._sum.amount || 0);
 	await prisma.loan.update({
 		where: { id: activeLoan.id },
 		data: {
-			amount: updatedLoanBalance,
+			// amount: updatedLoanBalance,
+			remainingAmount: updatedLoanBalance,
 		},
 	});
 
@@ -611,7 +638,7 @@ async function handleLoanRepayment(
 		await prisma.loan.update({
 			where: { id: activeLoan.id },
 			data: {
-				status: LoanStatus.REPAID,
+				status: LoanApprovalStatus.REPAID,
 			},
 		});
 	}

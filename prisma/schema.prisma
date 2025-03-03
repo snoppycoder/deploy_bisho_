@@ -44,6 +44,18 @@ model MemberHistory {
   member        Member   @relation(fields: [memberId], references: [id])
 }
 
+model MembershipRequest {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String
+  phone      String
+  // etNumber   Int
+  department String
+  status     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
 model MemberBalance {
   id                  Int      @id @default(autoincrement())
   memberId            Int      @unique
@@ -87,6 +99,7 @@ model Loan {
   id             Int               @id @default(autoincrement())
   memberId       Int
   amount         Decimal
+  remainingAmount Decimal?
   interestRate   Decimal
   tenureMonths   Int
   status         LoanApprovalStatus
@@ -98,6 +111,17 @@ model Loan {
   updatedAt      DateTime          @updatedAt
 }
 
+// model LoanRepayment {
+//   id            Int                 @id @default(autoincrement())
+//   loanId        Int
+//   amount        Decimal
+//   repaymentDate DateTime            @default(now())
+//   reference     String?
+//   sourceType    RepaymentSourceType
+//   loan          Loan                @relation(fields: [loanId], references: [id])
+//   createdAt     DateTime            @default(now())
+//   updatedAt     DateTime            @updatedAt
+// }
 model LoanRepayment {
   id            Int                 @id @default(autoincrement())
   loanId        Int
@@ -105,6 +129,7 @@ model LoanRepayment {
   repaymentDate DateTime            @default(now())
   reference     String?
   sourceType    RepaymentSourceType
+  status        RepaymentStatus     @default(PENDING)
   loan          Loan                @relation(fields: [loanId], references: [id])
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
@@ -233,4 +258,9 @@ enum NotificationType {
   GENERAL
 }
 
+enum RepaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
 
