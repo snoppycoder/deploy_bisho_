@@ -24,6 +24,7 @@ interface Transaction {
 	type: string;
 	amount: number;
 	date: string;
+	transactionDate: any;
 }
 
 export default function SavingsAndTransactionsPage() {
@@ -102,7 +103,7 @@ export default function SavingsAndTransactionsPage() {
 							{transactions.map((transaction) => (
 								<TableRow key={transaction.id}>
 									<TableCell>
-										{new Date(transaction.date).toLocaleDateString()}
+										{new Date(transaction.transactionDate).toLocaleDateString()}
 									</TableCell>
 									<TableCell>{transaction.type}</TableCell>
 									<TableCell>
