@@ -40,23 +40,27 @@ export async function GET(
 		}
 
 		// Build the where clause for transactions
-		const whereClause: any = {
-			memberId: Number.parseInt(params.etNumber),
+		const whereClause = {
+			memberId: params.etNumber,
 		};
 
-		if (startDate) {
-			whereClause.transactionDate = {
-				gte: startDate,
-			} as any;
-		}
+		// if (startDate) {
+		// 	whereClause.transactionDate = {
+		// 		gte: startDate,
+		// 	};
+		// }
 
-		if (type !== "all") {
-			whereClause.type = type;
-		}
+		// if (type !== "all") {
+		// 	whereClause.type = type;
+		// }
 
 		// Fetch member data
 		const member = await prisma.member.findUnique({
 			where: { etNumber: Number.parseInt(params.etNumber) },
+		});
+
+		console.log({
+			member,
 		});
 
 		if (!member) {
@@ -65,7 +69,9 @@ export async function GET(
 
 		// Fetch transactions with filtering
 		const transactions = await prisma.transaction.findMany({
-			where: whereClause,
+			where: {
+				memberId: member.id,
+			},
 			orderBy: { transactionDate: "desc" },
 		});
 

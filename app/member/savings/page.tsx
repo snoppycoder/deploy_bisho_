@@ -282,8 +282,6 @@ export default function SavingsAndTransactionsPage() {
 			<Tabs defaultValue="transactions">
 				<TabsList className="grid w-full grid-cols-3 mb-4">
 					<TabsTrigger value="transactions">Transactions</TabsTrigger>
-					<TabsTrigger value="trends">Savings Trends</TabsTrigger>
-					<TabsTrigger value="distribution">Distribution</TabsTrigger>
 				</TabsList>
 
 				<TabsContent value="transactions" className="space-y-4">
@@ -383,118 +381,6 @@ export default function SavingsAndTransactionsPage() {
 								</div>
 							)}
 						</CardContent>
-					</Card>
-				</TabsContent>
-
-				<TabsContent value="trends">
-					<Card>
-						<CardHeader>
-							<CardTitle>Monthly Savings Trends</CardTitle>
-							<CardDescription>
-								Your savings activity over the last 6 months
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							{isLoading ? (
-								<Skeleton className="h-[300px] w-full" />
-							) : monthlySavings.length > 0 ? (
-								<div className="h-[300px] w-full">
-									<ResponsiveContainer width="100%" height="100%">
-										<BarChart
-											data={monthlySavings}
-											margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-											<CartesianGrid strokeDasharray="3 3" />
-											<XAxis dataKey="month" />
-											<YAxis />
-											<Tooltip
-												formatter={(value) => formatCurrency(Number(value))}
-												labelFormatter={(label) => `Month: ${label}`}
-											/>
-											<Legend />
-											<Bar dataKey="deposits" name="Deposits" fill="#4ade80" />
-											<Bar
-												dataKey="withdrawals"
-												name="Withdrawals"
-												fill="#f87171"
-											/>
-											<Bar dataKey="net" name="Net Savings" fill="#60a5fa" />
-										</BarChart>
-									</ResponsiveContainer>
-								</div>
-							) : (
-								<div className="text-center py-8">
-									<p className="text-muted-foreground">
-										No savings data available for the selected period.
-									</p>
-								</div>
-							)}
-						</CardContent>
-					</Card>
-				</TabsContent>
-
-				<TabsContent value="distribution">
-					<Card>
-						<CardHeader>
-							<CardTitle>Transaction Type Distribution</CardTitle>
-							<CardDescription>
-								Breakdown of your transaction types
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							{isLoading ? (
-								<Skeleton className="h-[300px] w-full" />
-							) : typeDistribution.length > 0 ? (
-								<div className="h-[300px] w-full">
-									<ResponsiveContainer width="100%" height="100%">
-										<PieChart>
-											<Pie
-												data={typeDistribution}
-												cx="50%"
-												cy="50%"
-												labelLine={false}
-												outerRadius={80}
-												fill="#8884d8"
-												dataKey="value"
-												label={({ name, percent }) =>
-													`${name} ${(percent * 100).toFixed(0)}%`
-												}>
-												{typeDistribution.map((entry, index) => (
-													<Cell
-														key={`cell-${index}`}
-														fill={COLORS[index % COLORS.length]}
-													/>
-												))}
-											</Pie>
-											<Tooltip
-												formatter={(value) => formatCurrency(Number(value))}
-											/>
-											<Legend />
-										</PieChart>
-									</ResponsiveContainer>
-								</div>
-							) : (
-								<div className="text-center py-8">
-									<p className="text-muted-foreground">
-										No transaction data available for the selected period.
-									</p>
-								</div>
-							)}
-						</CardContent>
-						<CardFooter>
-							<div className="w-full grid grid-cols-2 md:grid-cols-4 gap-2">
-								{typeDistribution.map((type, index) => (
-									<div key={type.name} className="flex items-center gap-2">
-										<div
-											className="w-3 h-3 rounded-full"
-											style={{ backgroundColor: COLORS[index % COLORS.length] }}
-										/>
-										<span className="text-sm">
-											{type.name}: {formatCurrency(type.value)}
-										</span>
-									</div>
-								))}
-							</div>
-						</CardFooter>
 					</Card>
 				</TabsContent>
 			</Tabs>

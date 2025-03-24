@@ -146,10 +146,6 @@ export async function POST(request: NextRequest) {
 						type: "COST_OF_SHARE",
 						amount: memberData["Credit Association Cost of Share"],
 					},
-					// {
-					// 	type: "LOAN_REPAYMENT",
-					// 	amount: memberData["Credit Association Loan Repayment"],
-					// },
 					{
 						type: "PURCHASE",
 						amount: memberData["Credit Association Purchases"],
@@ -193,7 +189,7 @@ async function handleLoanRepayment(
 	repaymentAmount: number,
 	repaymentDate: Date
 ) {
-	// Find the last DISBURSED loan for the member
+	// Find the last/recent DISBURSED loan for the member
 	const activeLoan = await prisma.loan.findFirst({
 		where: {
 			memberId: memberId,
@@ -206,7 +202,7 @@ async function handleLoanRepayment(
 			},
 		},
 		orderBy: {
-			createdAt: "desc", // The most recent DISBURSED loan
+			createdAt: "desc",
 		},
 	});
 

@@ -362,15 +362,16 @@ function MemberDetailPage() {
 									</TableRow>
 								</TableHeader>
 								<TableBody>
-									{memberDetails.fees.map((fee) => (
-										<TableRow key={fee.id}>
-											<TableCell>
-												{new Date(fee.transactionDate).toLocaleDateString()}
-											</TableCell>
-											<TableCell>{fee.type}</TableCell>
-											<TableCell>{formatCurrency(fee.amount)}</TableCell>
-										</TableRow>
-									))}
+									{memberDetails.fees &&
+										memberDetails.fees.map((fee) => (
+											<TableRow key={fee.id}>
+												<TableCell>
+													{new Date(fee.transactionDate).toLocaleDateString()}
+												</TableCell>
+												<TableCell>{fee.type}</TableCell>
+												<TableCell>{formatCurrency(fee.amount)}</TableCell>
+											</TableRow>
+										))}
 								</TableBody>
 							</Table>
 						</TabsContent>

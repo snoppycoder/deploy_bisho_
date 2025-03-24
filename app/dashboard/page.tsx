@@ -703,7 +703,7 @@ export default function DashboardPage() {
 							<Button
 								size="sm"
 								className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
-								onClick={() => router.push("/dashboard/loans/pending")}>
+								onClick={() => router.push("/dashboard/loans/details")}>
 								Review Pending Loans
 							</Button>
 						</CardFooter>
