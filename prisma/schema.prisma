@@ -111,17 +111,6 @@ model Loan {
   updatedAt      DateTime          @updatedAt
 }
 
-// model LoanRepayment {
-//   id            Int                 @id @default(autoincrement())
-//   loanId        Int
-//   amount        Decimal
-//   repaymentDate DateTime            @default(now())
-//   reference     String?
-//   sourceType    RepaymentSourceType
-//   loan          Loan                @relation(fields: [loanId], references: [id])
-//   createdAt     DateTime            @default(now())
-//   updatedAt     DateTime            @updatedAt
-// }
 model LoanRepayment {
   id            Int                 @id @default(autoincrement())
   loanId        Int
@@ -163,21 +152,6 @@ model LoanDocument {
   loan             Loan     @relation(fields: [loanId], references: [id])
   user             User     @relation(fields: [uploadedByUserId], references: [id])
 }
-
-
-// model LoanDocument {
-//   id               Int          @id @default(autoincrement())
-//   loanId           Int
-//   uploadedByUserId Int
-//   documentType     DocumentType
-//   documentContent  Bytes        // Field to store file content
-//   fileName         String       // Field to store original file name
-//   mimeType         String       // Field to store file type
-//   documentUrl      String       // Keep this field, but we'll use it differently
-//   uploadDate       DateTime     @default(now())
-//   loan             Loan         @relation(fields: [loanId], references: [id])
-//   user             User         @relation(fields: [uploadedByUserId], references: [id])
-// }
 
 model User {
   id              Int               @id @default(autoincrement())
