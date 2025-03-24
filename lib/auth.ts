@@ -148,7 +148,7 @@ export function setAuthCookie(
 		value: token,
 		httpOnly: true,
 		path: "/",
-		secure: process.env.NODE_ENV === "production",
+		// secure: process.env.NODE_ENV === "production",
 		maxAge: 60 * 60 * 24, // 1 day
 	});
 
@@ -161,7 +161,7 @@ export function removeAuthCookie(response: NextResponse): NextResponse {
 		value: "",
 		httpOnly: true,
 		path: "/",
-		secure: process.env.NODE_ENV === "production",
+		// secure: process.env.NODE_ENV === "production",
 		maxAge: 0,
 	});
 
