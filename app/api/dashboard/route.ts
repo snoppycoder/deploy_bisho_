@@ -7,7 +7,15 @@ import {
 } from "@prisma/client";
 import { startOfMonth, subMonths, format } from "date-fns";
 
+// Add cache control headers to the API route
 export async function GET() {
+	// Add cache control headers to ensure fresh data
+	const headers = new Headers({
+		"Cache-Control": "no-cache, no-store, must-revalidate",
+		"Pragma": "no-cache",
+		"Expires": "0",
+	});
+
 	try {
 		// Basic metrics
 		const totalMembers = await prisma.member.count();
@@ -267,99 +275,58 @@ export async function GET() {
 			orderBy: { totalSavings: "desc" },
 			include: {
 				member: {
-					select: { name: true },
+					select: { name: true, etNumber: true },
 				},
 			},
 		});
 
 		const formattedTopSavers = topSavers.map((saver) => ({
 			memberId: saver.memberId,
+			etNumber: saver.member.etNumber,
 			memberName: saver.member.name,
 			totalSavings: saver.totalSavings,
 		}));
 
-		return NextResponse.json({
-			// Basic metrics
-			totalMembers,
-			activeLoanCount,
-			totalSavings: totalSavingsTransactions._sum.amount || 0,
-			pendingApprovals,
+		return NextResponse.json(
+			{
+				// Basic metrics
+				totalMembers,
+				activeLoanCount,
+				totalSavings: totalSavingsTransactions._sum.amount || 0,
+				pendingApprovals,
 
-			// Financial metrics from transactions
-			membershipFees: membershipFeeTransactions._sum.amount || 0,
-			willingDeposits: willingDepositTransactions._sum.amount || 0,
-			loanRepayments: totalRepayments._sum.amount || 0, // Using LoanRepayment schema
+				// Financial metrics from transactions
+				membershipFees: membershipFeeTransactions._sum.amount || 0,
+				willingDeposits: willingDepositTransactions._sum.amount || 0,
+				loanRepayments: totalRepayments._sum.amount || 0, // Using LoanRepayment schema
 
-			// Loan portfolio metrics
-			loanPortfolio: loanPortfolio._sum.amount || 0,
-			outstandingLoans: outstandingLoans._sum.remainingAmount || 0, // Fixed property access
-			portfolioAtRisk,
+				// Loan portfolio metrics
+				loanPortfolio: loanPortfolio._sum.amount || 0,
+				outstandingLoans: outstandingLoans._sum.remainingAmount || 0, // Fixed property access
+				portfolioAtRisk,
 
-			// Distributions
-			loanStatusDistribution: formattedLoanStatusDistribution,
-			departmentDistribution: formattedDepartmentDistribution,
-			transactionDistribution: formattedTransactionDistribution,
-			loanSizeDistribution,
+				// Distributions
+				loanStatusDistribution: formattedLoanStatusDistribution,
+				departmentDistribution: formattedDepartmentDistribution,
+				transactionDistribution: formattedTransactionDistribution,
+				loanSizeDistribution,
 
-			// Trends
-			loanTrends,
-			savingsTrends,
-			repaymentTrends,
+				// Trends
+				loanTrends,
+				savingsTrends,
+				repaymentTrends,
 
-			// Lists
-			recentLoans: formattedRecentLoans,
-			topSavers: formattedTopSavers,
-		});
+				// Lists
+				recentLoans: formattedRecentLoans,
+				topSavers: formattedTopSavers,
+			},
+			{ headers }
+		); // Add headers to the response
 	} catch (error) {
 		console.error("Error fetching dashboard data:", error);
 		return NextResponse.json(
 			{ error: "Internal Server Error" },
-			{ status: 500 }
+			{ status: 500, headers }
 		);
 	}
 }
-
-// import { NextResponse } from "next/server";
-// import prisma from "@/lib/prisma";
-// import { LoanApprovalStatus } from "@prisma/client";
-
-// export async function GET() {
-// 	try {
-// 		const totalMembers = await prisma.member.count();
-// 		const activeLoanCount = await prisma.loan.count({
-// 			where: { status: "DISBURSED" as LoanApprovalStatus },
-// 		});
-// 		const totalSavings = await prisma.savings.aggregate({
-// 			_sum: { amount: true },
-// 		});
-// 		const pendingApprovals = await prisma.loan.count({
-// 			where: { status: "PENDING" as LoanApprovalStatus },
-// 		});
-
-// 		const loanStatusDistribution = await prisma.loan.groupBy({
-// 			by: ["status"],
-// 			_count: true,
-// 		});
-
-// 		const formattedLoanStatusDistribution = loanStatusDistribution.map(
-// 			(item) => ({
-// 				name: item.status,
-// 				value: item._count,
-// 			})
-// 		);
-
-// 		return NextResponse.json({
-// 			totalMembers,
-// 			activeLoanCount,
-// 			totalSavings: totalSavings._sum.amount || 0,
-// 			pendingApprovals,
-// 			loanStatusDistribution: formattedLoanStatusDistribution,
-// 		});
-// 	} catch (error) {
-// 		console.error("Error fetching dashboard data:", error);
-// 		return NextResponse.json(
-// 			{ error: "Internal Server Error" },
-// 			{ status: 500 }
-// 		);
-// 	}
-// }

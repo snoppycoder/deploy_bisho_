@@ -167,11 +167,11 @@ export default function MembersListPage() {
 				header: "Department",
 				cell: ({ row }) => <div>{row.getValue("department")}</div>,
 			},
-			{
-				accessorKey: "group",
-				header: "Group",
-				cell: ({ row }) => <div>{row.getValue("group")}</div>,
-			},
+			// {
+			// 	accessorKey: "group",
+			// 	header: "Group",
+			// 	cell: ({ row }) => <div>{row.getValue("group")}</div>,
+			// },
 			{
 				accessorKey: "effectiveDate",
 				header: "Effective Date",
