@@ -1,12 +1,12 @@
-const {
+import {
 	PrismaClient,
 	UserRole,
-	LoanStatus,
+	// LoanStatus,
 	DocumentType,
 	RepaymentSourceType,
 	TransactionType,
-} = require("@prisma/client");
-const bcrypt = require("bcryptjs");
+} from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -244,7 +244,7 @@ async function main() {
 			amount: 5000.0,
 			interestRate: 5.0,
 			tenureMonths: 12,
-			status: LoanStatus.DISBURSED,
+			status: "DISBURSED",
 		},
 	});
 
@@ -254,7 +254,7 @@ async function main() {
 			loanId: loan1.id,
 			approvedByUserId: loanOfficer.id,
 			role: UserRole.LOAN_OFFICER,
-			status: LoanStatus.VERIFIED,
+			status: "VERIFIED",
 			approvalOrder: 1,
 			comments: "All documents verified",
 			approvalDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
@@ -266,7 +266,7 @@ async function main() {
 			loanId: loan1.id,
 			approvedByUserId: branchManager.id,
 			role: UserRole.BRANCH_MANAGER,
-			status: LoanStatus.APPROVED,
+			status: "APPROVED",
 			approvalOrder: 2,
 			comments: "Approved based on good savings history",
 			approvalDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
@@ -278,7 +278,7 @@ async function main() {
 			loanId: loan1.id,
 			approvedByUserId: financeAdmin.id,
 			role: UserRole.FINANCE_ADMIN,
-			status: LoanStatus.DISBURSED,
+			status: "DISBURSED",
 			approvalOrder: 3,
 			comments: "Funds disbursed to member account",
 			approvalDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
@@ -316,7 +316,7 @@ async function main() {
 			amount: 10000.0,
 			interestRate: 6.0,
 			tenureMonths: 24,
-			status: LoanStatus.PENDING,
+			status: "PENDING",
 		},
 	});
 
