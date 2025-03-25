@@ -29,28 +29,28 @@ async function main() {
 		{
 			name: "Loan Officer",
 			email: "loan.officer@example.com",
-			phone: "1234567890",
+			phone: "0913228899",
 			password: await bcrypt.hash("password123", 10),
 			role: UserRole.LOAN_OFFICER,
 		},
 		{
 			name: "Branch Manager",
 			email: "branch.manager@example.com",
-			phone: "2345678901",
+			phone: "0913228888",
 			password: await bcrypt.hash("password123", 10),
 			role: UserRole.BRANCH_MANAGER,
 		},
 		{
 			name: "Regional Manager",
 			email: "regional.manager@example.com",
-			phone: "3456789012",
+			phone: "0913228811",
 			password: await bcrypt.hash("password123", 10),
 			role: UserRole.REGIONAL_MANAGER,
 		},
 		{
 			name: "Finance Admin",
 			email: "finance.admin@example.com",
-			phone: "4567890123",
+			phone: "0913228833",
 			password: await bcrypt.hash("password123", 10),
 			role: UserRole.FINANCE_ADMIN,
 		},
@@ -63,146 +63,146 @@ async function main() {
 	}
 
 	// Create member users with associated member records
-	const memberUsers = [
-		{
-			user: {
-				name: "Abebe Teka",
-				email: "john.doe@example.com",
-				phone: "0913228892",
-				password: await bcrypt.hash("password123", 10),
-				role: UserRole.MEMBER,
-			},
-			member: {
-				memberNumber: 10001,
-				etNumber: 20001,
-				name: "Abebe Teka",
-				division: "Engineering",
-				department: "Software",
-				section: "Development",
-				group: "Backend",
-			},
-		},
-		{
-			user: {
-				name: "Ayele Gebre",
-				email: "jane.smith@example.com",
-				phone: "0914323232",
-				password: await bcrypt.hash("password123", 10),
-				role: UserRole.MEMBER,
-			},
-			member: {
-				memberNumber: 10002,
-				etNumber: 20002,
-				name: "Ayele Gebre",
-				division: "Engineering",
-				department: "Software",
-				section: "Development",
-				group: "Frontend",
-			},
-		},
-		{
-			user: {
-				name: "Bob Johnson",
-				email: "bob.johnson@example.com",
-				phone: "7890123456",
-				password: await bcrypt.hash("password123", 10),
-				role: UserRole.MEMBER,
-			},
-			member: {
-				memberNumber: 10003,
-				etNumber: 20003,
-				name: "Bob Johnson",
-				division: "Finance",
-				department: "Accounting",
-				section: "Payroll",
-				group: "Processing",
-			},
-		},
-	];
+	// const memberUsers = [
+	// 	{
+	// 		user: {
+	// 			name: "Abebe Teka",
+	// 			email: "john.doe@example.com",
+	// 			phone: "0913228892",
+	// 			password: await bcrypt.hash("password123", 10),
+	// 			role: UserRole.MEMBER,
+	// 		},
+	// 		member: {
+	// 			memberNumber: 10001,
+	// 			etNumber: 20001,
+	// 			name: "Abebe Teka",
+	// 			division: "Engineering",
+	// 			department: "Software",
+	// 			section: "Development",
+	// 			group: "Backend",
+	// 		},
+	// 	},
+	// 	{
+	// 		user: {
+	// 			name: "Ayele Gebre",
+	// 			email: "jane.smith@example.com",
+	// 			phone: "0914323232",
+	// 			password: await bcrypt.hash("password123", 10),
+	// 			role: UserRole.MEMBER,
+	// 		},
+	// 		member: {
+	// 			memberNumber: 10002,
+	// 			etNumber: 20002,
+	// 			name: "Ayele Gebre",
+	// 			division: "Engineering",
+	// 			department: "Software",
+	// 			section: "Development",
+	// 			group: "Frontend",
+	// 		},
+	// 	},
+	// 	{
+	// 		user: {
+	// 			name: "Bob Johnson",
+	// 			email: "bob.johnson@example.com",
+	// 			phone: "7890123456",
+	// 			password: await bcrypt.hash("password123", 10),
+	// 			role: UserRole.MEMBER,
+	// 		},
+	// 		member: {
+	// 			memberNumber: 10003,
+	// 			etNumber: 20003,
+	// 			name: "Bob Johnson",
+	// 			division: "Finance",
+	// 			department: "Accounting",
+	// 			section: "Payroll",
+	// 			group: "Processing",
+	// 		},
+	// 	},
+	// ];
 
-	for (const { user, member } of memberUsers) {
-		const createdUser = await prisma.user.create({
-			data: user,
-		});
+	// for (const { user, member } of memberUsers) {
+	// 	const createdUser = await prisma.user.create({
+	// 		data: user,
+	// 	});
 
-		const createdMember = await prisma.member.create({
-			data: {
-				...member,
-				userId: createdUser.id,
-			},
-		});
+	// 	const createdMember = await prisma.member.create({
+	// 		data: {
+	// 			...member,
+	// 			userId: createdUser.id,
+	// 		},
+	// 	});
 
-		// Create member balance
-		await prisma.memberBalance.create({
-			data: {
-				memberId: createdMember.id,
-				totalSavings: 1000.0,
-				totalContributions: 500.0,
-				costOfShare: 200.0,
-				registrationFee: 50.0,
-				membershipFee: 100.0,
-				willingDeposit: 150.0,
-			},
-		});
+	// 	// Create member balance
+	// 	await prisma.memberBalance.create({
+	// 		data: {
+	// 			memberId: createdMember.id,
+	// 			totalSavings: 1000.0,
+	// 			totalContributions: 500.0,
+	// 			costOfShare: 200.0,
+	// 			registrationFee: 50.0,
+	// 			membershipFee: 100.0,
+	// 			willingDeposit: 150.0,
+	// 		},
+	// 	});
 
-		// Create savings entries
-		await prisma.savings.create({
-			data: {
-				memberId: createdMember.id,
-				amount: 500.0,
-				savingsDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
-			},
-		});
+	// 	// Create savings entries
+	// 	await prisma.savings.create({
+	// 		data: {
+	// 			memberId: createdMember.id,
+	// 			amount: 500.0,
+	// 			savingsDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // 30 days ago
+	// 		},
+	// 	});
 
-		await prisma.savings.create({
-			data: {
-				memberId: createdMember.id,
-				amount: 500.0,
-				savingsDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
-			},
-		});
+	// 	await prisma.savings.create({
+	// 		data: {
+	// 			memberId: createdMember.id,
+	// 			amount: 500.0,
+	// 			savingsDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000), // 15 days ago
+	// 		},
+	// 	});
 
-		// Create transactions
-		await prisma.transaction.create({
-			data: {
-				memberId: createdMember.id,
-				type: TransactionType.SAVINGS,
-				amount: 500.0,
-				reference: "Monthly Savings",
-				transactionDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-			},
-		});
+	// 	// Create transactions
+	// 	await prisma.transaction.create({
+	// 		data: {
+	// 			memberId: createdMember.id,
+	// 			type: TransactionType.SAVINGS,
+	// 			amount: 500.0,
+	// 			reference: "Monthly Savings",
+	// 			transactionDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+	// 		},
+	// 	});
 
-		await prisma.transaction.create({
-			data: {
-				memberId: createdMember.id,
-				type: TransactionType.SAVINGS,
-				amount: 500.0,
-				reference: "Monthly Savings",
-				transactionDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-			},
-		});
+	// 	await prisma.transaction.create({
+	// 		data: {
+	// 			memberId: createdMember.id,
+	// 			type: TransactionType.SAVINGS,
+	// 			amount: 500.0,
+	// 			reference: "Monthly Savings",
+	// 			transactionDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+	// 		},
+	// 	});
 
-		await prisma.transaction.create({
-			data: {
-				memberId: createdMember.id,
-				type: TransactionType.MEMBERSHIP_FEE,
-				amount: 100.0,
-				reference: "Annual Membership Fee",
-				transactionDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-			},
-		});
+	// 	await prisma.transaction.create({
+	// 		data: {
+	// 			memberId: createdMember.id,
+	// 			type: TransactionType.MEMBERSHIP_FEE,
+	// 			amount: 100.0,
+	// 			reference: "Annual Membership Fee",
+	// 			transactionDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+	// 		},
+	// 	});
 
-		await prisma.transaction.create({
-			data: {
-				memberId: createdMember.id,
-				type: TransactionType.COST_OF_SHARE,
-				amount: 400.0,
-				reference: "Share Purchase",
-				transactionDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
-			},
-		});
-	}
+	// 	await prisma.transaction.create({
+	// 		data: {
+	// 			memberId: createdMember.id,
+	// 			type: TransactionType.COST_OF_SHARE,
+	// 			amount: 400.0,
+	// 			reference: "Share Purchase",
+	// 			transactionDate: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
+	// 		},
+	// 	});
+	// }
 
 	// Create sample loans
 	const loanOfficer = await prisma.user.findFirst({
@@ -225,132 +225,132 @@ async function main() {
 		throw new Error("Required admin users not found");
 	}
 
-	const member1 = await prisma.member.findFirst({
-		where: { memberNumber: 10001 },
-	});
+	// const member1 = await prisma.member.findFirst({
+	// 	where: { memberNumber: 10001 },
+	// });
 
-	const member2 = await prisma.member.findFirst({
-		where: { memberNumber: 10002 },
-	});
+	// const member2 = await prisma.member.findFirst({
+	// 	where: { memberNumber: 10002 },
+	// });
 
-	if (!member1 || !member2) {
-		throw new Error("Required members not found");
-	}
+	// if (!member1 || !member2) {
+	// 	throw new Error("Required members not found");
+	// }
 
 	// Create a fully approved and disbursed loan
-	const loan1 = await prisma.loan.create({
-		data: {
-			memberId: member1.id,
-			amount: 5000.0,
-			interestRate: 5.0,
-			tenureMonths: 12,
-			status: "DISBURSED",
-		},
-	});
+	// const loan1 = await prisma.loan.create({
+	// 	data: {
+	// 		memberId: member1.id,
+	// 		amount: 5000.0,
+	// 		interestRate: 5.0,
+	// 		tenureMonths: 12,
+	// 		status: "DISBURSED",
+	// 	},
+	// });
 
 	// Create approval logs for loan1
-	await prisma.loanApprovalLog.create({
-		data: {
-			loanId: loan1.id,
-			approvedByUserId: loanOfficer.id,
-			role: UserRole.LOAN_OFFICER,
-			status: "VERIFIED",
-			approvalOrder: 1,
-			comments: "All documents verified",
-			approvalDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-		},
-	});
+	// await prisma.loanApprovalLog.create({
+	// 	data: {
+	// 		loanId: loan1.id,
+	// 		approvedByUserId: loanOfficer.id,
+	// 		role: UserRole.LOAN_OFFICER,
+	// 		status: "VERIFIED",
+	// 		approvalOrder: 1,
+	// 		comments: "All documents verified",
+	// 		approvalDate: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+	// 	},
+	// });
 
-	await prisma.loanApprovalLog.create({
-		data: {
-			loanId: loan1.id,
-			approvedByUserId: branchManager.id,
-			role: UserRole.BRANCH_MANAGER,
-			status: "APPROVED",
-			approvalOrder: 2,
-			comments: "Approved based on good savings history",
-			approvalDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
-		},
-	});
+	// await prisma.loanApprovalLog.create({
+	// 	data: {
+	// 		loanId: loan1.id,
+	// 		approvedByUserId: branchManager.id,
+	// 		role: UserRole.BRANCH_MANAGER,
+	// 		status: "APPROVED",
+	// 		approvalOrder: 2,
+	// 		comments: "Approved based on good savings history",
+	// 		approvalDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000),
+	// 	},
+	// });
 
-	await prisma.loanApprovalLog.create({
-		data: {
-			loanId: loan1.id,
-			approvedByUserId: financeAdmin.id,
-			role: UserRole.FINANCE_ADMIN,
-			status: "DISBURSED",
-			approvalOrder: 3,
-			comments: "Funds disbursed to member account",
-			approvalDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-		},
-	});
+	// await prisma.loanApprovalLog.create({
+	// 	data: {
+	// 		loanId: loan1.id,
+	// 		approvedByUserId: financeAdmin.id,
+	// 		role: UserRole.FINANCE_ADMIN,
+	// 		status: "DISBURSED",
+	// 		approvalOrder: 3,
+	// 		comments: "Funds disbursed to member account",
+	// 		approvalDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+	// 	},
+	// });
 
-	// Create loan document for loan1
-	await prisma.loanDocument.create({
-		data: {
-			loanId: loan1.id,
-			uploadedByUserId: member1.userId,
-			documentUrl: "/documents/loan1_agreement.pdf",
-			documentType: DocumentType.AGREEMENT,
-			fileName: "loan1_agreement.pdf",
-			mimeType: "application/pdf",
-			documentContent: Buffer.from("Sample agreement content"),
-		},
-	});
+	// // Create loan document for loan1
+	// await prisma.loanDocument.create({
+	// 	data: {
+	// 		loanId: loan1.id,
+	// 		uploadedByUserId: member1.userId,
+	// 		documentUrl: "/documents/loan1_agreement.pdf",
+	// 		documentType: DocumentType.AGREEMENT,
+	// 		fileName: "loan1_agreement.pdf",
+	// 		mimeType: "application/pdf",
+	// 		documentContent: Buffer.from("Sample agreement content"),
+	// 	},
+	// });
 
-	// Create loan repayments for loan1
-	await prisma.loanRepayment.create({
-		data: {
-			loanId: loan1.id,
-			amount: 450.0,
-			repaymentDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-			reference: "ERP-12345",
-			sourceType: RepaymentSourceType.ERP_PAYROLL,
-		},
-	});
+	// // Create loan repayments for loan1
+	// await prisma.loanRepayment.create({
+	// 	data: {
+	// 		loanId: loan1.id,
+	// 		amount: 450.0,
+	// 		repaymentDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+	// 		reference: "ERP-12345",
+	// 		sourceType: RepaymentSourceType.ERP_PAYROLL,
+	// 	},
+	// });
 
-	// Create a pending loan
-	const loan2 = await prisma.loan.create({
-		data: {
-			memberId: member2.id,
-			amount: 10000.0,
-			interestRate: 6.0,
-			tenureMonths: 24,
-			status: "PENDING",
-		},
-	});
+	// // Create a pending loan
+	// const loan2 = await prisma.loan.create({
+	// 	data: {
+	// 		memberId: member2.id,
+	// 		amount: 10000.0,
+	// 		interestRate: 6.0,
+	// 		tenureMonths: 24,
+	// 		status: "PENDING",
+	// 	},
+	// });
 
-	// Create loan document for loan2
-	await prisma.loanDocument.create({
-		data: {
-			loanId: loan2.id,
-			uploadedByUserId: member2.userId,
-			documentUrl: "/documents/loan2_agreement.pdf",
-			documentType: DocumentType.AGREEMENT,
-			fileName: "loan2_agreement.pdf",
-			mimeType: "application/pdf",
-			documentContent: Buffer.from("Sample agreement content for loan 2"),
-		},
-	});
+	// // Create loan document for loan2
+	// await prisma.loanDocument.create({
+	// 	data: {
+	// 		loanId: loan2.id,
+	// 		uploadedByUserId: member2.userId,
+	// 		documentUrl: "/documents/loan2_agreement.pdf",
+	// 		documentType: DocumentType.AGREEMENT,
+	// 		fileName: "loan2_agreement.pdf",
+	// 		mimeType: "application/pdf",
+	// 		documentContent: Buffer.from("Sample agreement content for loan 2"),
+	// 	},
+	// });
 
-	// Create sample notifications
-	await prisma.notification.create({
-		data: {
-			userId: member1.userId,
-			title: "Loan Approved",
-			message: "Your loan application has been approved.",
-			type: "LOAN_STATUS_UPDATE",
-		},
-	});
+	// // Create sample notifications
+	// await prisma.notification.create({
+	// 	data: {
+	// 		userId: member1.userId,
+	// 		title: "Loan Approved",
+	// 		message: "Your loan application has been approved.",
+	// 		type: "LOAN_STATUS_UPDATE",
+	// 	},
+	// });
 
-	await prisma.notification.create({
-		data: {
-			userId: member2.userId,
-			title: "Loan Application Received",
-			message: "Your loan application has been received and is under review.",
-			type: "LOAN_APPLICATION_SUBMITTED",
-		},
-	});
+	// await prisma.notification.create({
+	// 	data: {
+	// 		userId: member2.userId,
+	// 		title: "Loan Application Received",
+	// 		message: "Your loan application has been received and is under review.",
+	// 		type: "LOAN_APPLICATION_SUBMITTED",
+	// 	},
+	// });
 
 	console.log("Database seeded successfully");
 }
