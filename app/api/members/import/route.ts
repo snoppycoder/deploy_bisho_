@@ -189,10 +189,9 @@ async function handleLoanRepayment(
 	repaymentAmount: number,
 	repaymentDate: Date
 ) {
-	// Find the last/recent DISBURSED loan for the member
 	const activeLoan = await prisma.loan.findFirst({
 		where: {
-			memberId: memberId,
+			memberId,
 			status: LoanApprovalStatus.DISBURSED,
 		},
 		include: {
@@ -201,38 +200,40 @@ async function handleLoanRepayment(
 				where: { status: "PENDING" },
 			},
 		},
-		orderBy: {
-			createdAt: "desc",
-		},
+		orderBy: { createdAt: "desc" },
 	});
 
 	if (!activeLoan) {
 		throw new Error("No active loan found for the member");
 	}
 
-	// Find all pending repayments
-	const pendingRepayments = activeLoan.loanRepayments;
-
 	let remainingAmount = repaymentAmount;
-	for (const repayment of pendingRepayments) {
+
+	for (const repayment of activeLoan.loanRepayments) {
 		if (remainingAmount <= 0) break;
 
 		const amountToApply = Math.min(remainingAmount, repayment.amount);
 
-		// Update the repayment
-		await prisma.loanRepayment.update({
-			where: { id: repayment.id },
-			data: {
-				amount: amountToApply,
-				repaymentDate: repaymentDate,
-				status: "PAID",
-			},
-		});
+		if (amountToApply === repayment.amount) {
+			// Fully paid this repayment
+			await prisma.loanRepayment.update({
+				where: { id: repayment.id },
+				data: {
+					repaymentDate,
+					status: "PAID",
+				},
+			});
+		} else {
+			// Partial payment - split into PAID and remaining PENDING
+			await prisma.loanRepayment.update({
+				where: { id: repayment.id },
+				data: {
+					amount: amountToApply,
+					repaymentDate,
+					status: "PAID",
+				},
+			});
 
-		remainingAmount -= amountToApply;
-
-		// If there's still an unpaid portion, create a new pending repayment
-		if (amountToApply < repayment.amount) {
 			await prisma.loanRepayment.create({
 				data: {
 					loanId: activeLoan.id,
@@ -243,36 +244,37 @@ async function handleLoanRepayment(
 				},
 			});
 		}
+
+		remainingAmount -= amountToApply;
 	}
 
 	// Create a transaction record
 	await prisma.transaction.create({
 		data: {
-			memberId: memberId,
+			memberId,
 			type: TransactionType.LOAN_REPAYMENT,
 			amount: repaymentAmount,
 			transactionDate: repaymentDate,
 		},
 	});
 
-	// Update loan balance
-	const totalRepaid = await prisma.loanRepayment.aggregate({
+	// Recalculate total repaid (based on PAID records)
+	const totalRepaidResult = await prisma.loanRepayment.aggregate({
 		where: { loanId: activeLoan.id, status: "PAID" },
 		_sum: { amount: true },
 	});
+	const totalRepaid = totalRepaidResult._sum.amount || 0;
 
-	const updatedLoanBalance =
-		activeLoan.remainingAmount - (totalRepaid._sum.amount || 0);
+	const newRemaining = activeLoan.amount - totalRepaid;
+
 	await prisma.loan.update({
 		where: { id: activeLoan.id },
 		data: {
-			// amount: updatedLoanBalance,
-			remainingAmount: updatedLoanBalance,
+			remainingAmount: newRemaining,
 		},
 	});
 
-	// If the loan is fully repaid, update its status
-	if (updatedLoanBalance <= 0) {
+	if (newRemaining <= 0) {
 		await prisma.loan.update({
 			where: { id: activeLoan.id },
 			data: {
@@ -281,3 +283,103 @@ async function handleLoanRepayment(
 		});
 	}
 }
+
+
+// async function handleLoanRepayment(
+// 	prisma: any,
+// 	memberId: number,
+// 	repaymentAmount: number,
+// 	repaymentDate: Date
+// ) {
+// 	// Find the last/recent DISBURSED loan for the member
+// 	const activeLoan = await prisma.loan.findFirst({
+// 		where: {
+// 			memberId: memberId,
+// 			status: LoanApprovalStatus.DISBURSED,
+// 		},
+// 		include: {
+// 			loanRepayments: {
+// 				orderBy: { repaymentDate: "asc" },
+// 				where: { status: "PENDING" },
+// 			},
+// 		},
+// 		orderBy: {
+// 			createdAt: "desc",
+// 		},
+// 	});
+
+// 	if (!activeLoan) {
+// 		throw new Error("No active loan found for the member");
+// 	}
+
+// 	// Find all pending repayments
+// 	const pendingRepayments = activeLoan.loanRepayments;
+
+// 	let remainingAmount = repaymentAmount;
+// 	for (const repayment of pendingRepayments) {
+// 		if (remainingAmount <= 0) break;
+
+// 		const amountToApply = Math.min(remainingAmount, repayment.amount);
+
+// 		// Update the repayment
+// 		await prisma.loanRepayment.update({
+// 			where: { id: repayment.id },
+// 			data: {
+// 				amount: amountToApply,
+// 				repaymentDate: repaymentDate,
+// 				status: "PAID",
+// 			},
+// 		});
+
+// 		remainingAmount -= amountToApply;
+
+// 		// If there's still an unpaid portion, create a new pending repayment
+// 		if (amountToApply < repayment.amount) {
+// 			await prisma.loanRepayment.create({
+// 				data: {
+// 					loanId: activeLoan.id,
+// 					amount: repayment.amount - amountToApply,
+// 					repaymentDate: repayment.repaymentDate,
+// 					status: "PENDING",
+// 					sourceType: "ERP_PAYROLL",
+// 				},
+// 			});
+// 		}
+// 	}
+
+// 	// Create a transaction record
+// 	await prisma.transaction.create({
+// 		data: {
+// 			memberId: memberId,
+// 			type: TransactionType.LOAN_REPAYMENT,
+// 			amount: repaymentAmount,
+// 			transactionDate: repaymentDate,
+// 		},
+// 	});
+
+// 	// Update loan balance
+// 	const totalRepaid = await prisma.loanRepayment.aggregate({
+// 		where: { loanId: activeLoan.id, status: "PAID" },
+// 		_sum: { amount: true },
+// 	});
+
+// 	const updatedLoanBalance =
+// 		activeLoan.remainingAmount - (totalRepaid._sum.amount || 0);
+// 	await prisma.loan.update({
+// 		where: { id: activeLoan.id },
+// 		data: {
+// 			// amount: updatedLoanBalance,
+// 			remainingAmount: updatedLoanBalance,
+// 		},
+// 	});
+
+// 	// If the loan is fully repaid, update its status
+// 	if (updatedLoanBalance <= 0) {
+// 		await prisma.loan.update({
+// 			where: { id: activeLoan.id },
+// 			data: {
+// 				status: LoanApprovalStatus.REPAID,
+// 			},
+// 		});
+// 	}
+// }
