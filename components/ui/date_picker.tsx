@@ -1,10 +1,12 @@
+
 "use client";
-import { format } from "date-fns";
+import { format,addMonths } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
+
 import {
 	Popover,
 	PopoverContent,
@@ -24,6 +26,7 @@ export function DatePicker({
 	placeholderText = "Pick a date",
 	className,
 }: DatePickerProps) {
+	
 	return (
 		<Popover>
 			<PopoverTrigger asChild>
@@ -36,7 +39,8 @@ export function DatePicker({
 					)}>
 					<CalendarIcon className="mr-2 h-4 w-4" />
 					{selected ? (
-						format(selected, "MMMM yyyy")
+						// format(selected, "MMMM yyyy")
+						format(addMonths(selected, -1), "MMMM yyyy") 
 					) : (
 						<span>{placeholderText}</span>
 					)}

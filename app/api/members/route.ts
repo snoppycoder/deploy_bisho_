@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { startOfMonth, endOfMonth, parseISO } from "date-fns";
+import { DateTime } from 'luxon';
 
 export async function GET(request: NextRequest) {
 	const session = await getSession();
@@ -17,9 +18,11 @@ export async function GET(request: NextRequest) {
 	let endDate: Date;
 
 	if (effectiveDateStr) {
-		effectiveDate = parseISO(effectiveDateStr);
+		// effectiveDate = parseISO(effectiveDateStr);
+		effectiveDate = DateTime.fromISO(effectiveDateStr, { zone: 'utc' }).toJSDate();
 	} else {
-		effectiveDate = new Date(); // Use current date if no effectiveDate is provided
+		// effectiveDate = new Date(); // Use current date if no effectiveDate is provided
+		effectiveDate = DateTime.utc().toJSDate(); // Use current date in UTC
 	}
 
 	startDate = startOfMonth(effectiveDate);
