@@ -10,7 +10,7 @@
 		"seed": "node prisma/seed.js"
 	},
 	"prisma": {
-		"seed": "ts-node prisma/seed.ts"
+		"seed": "ts-node prisma/seed.js"
 	},
 	"dependencies": {
 		"@hookform/resolvers": "latest",
