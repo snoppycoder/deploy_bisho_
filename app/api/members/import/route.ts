@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import xmlrpc from "xmlrpc";
 import prisma from "@/lib/prisma";
 import { LoanApprovalStatus, TransactionType } from "@prisma/client";
 
@@ -25,12 +26,134 @@ interface MemberData {
 	"Total": number;
 }
 
+interface Account {
+	id: number;
+	code: string;
+	name: string;
+	account_type: string;
+}
+
+interface TransactionDetails {
+	type: string;
+	amount?: number;
+	principal?: number;
+	interest?: number;
+	date?: string;
+	reference?: string;
+	journalId?: number;
+}
+
+interface JournalLineItem {
+	account_id: number;
+	name: string;
+	debit: number;
+	credit: number;
+}
+
+interface JournalEntry {
+	move_type: string;
+	journal_id: number;
+	date: string;
+	ref: string;
+	line_ids: [number, number, JournalLineItem][];
+}
+
+const ODOO_CONFIG = {
+	host: "116.202.104.180",
+	port: 8069,
+	db: "test",
+	username: "admin",
+	password: "admin",
+	commonPath: "/xmlrpc/2/common",
+	objectPath: "/xmlrpc/2/object",
+};
+
+const ACCOUNTS: Record<string, Account> = {
+	cash: { id: 102, code: "211002", name: "Cash", account_type: "asset_cash" },
+	bank: { id: 101, code: "211001", name: "Bank", account_type: "asset_cash" },
+	tradeDebtors: {
+		id: 9,
+		code: "221100",
+		name: "Trade Debtors",
+		account_type: "asset_receivable",
+	},
+	suspense: {
+		id: 5,
+		code: "220100",
+		name: "Suspense",
+		account_type: "asset_receivable",
+	},
+	otherDeposits: {
+		id: 38,
+		code: "305400",
+		name: "Other deposits",
+		account_type: "liability_current",
+	},
+	commercialLoan: {
+		id: 40,
+		code: "310300",
+		name: "Commercial Loan",
+		account_type: "liability_current",
+	},
+	salesIncome: {
+		id: 1,
+		code: "110000",
+		name: "Sales of Goods and Services",
+		account_type: "income",
+	},
+	exchangeGain: {
+		id: 98,
+		code: "120000",
+		name: "Foreign Exchange Currency Gain Account",
+		account_type: "income_other",
+	},
+	interestExpense: {
+		id: 97,
+		code: "643400",
+		name: "Payments of interest and bank charges on local debt",
+		account_type: "expense",
+	},
+	feeExpense: {
+		id: 81,
+		code: "625600",
+		name: "Fees and charges",
+		account_type: "expense",
+	},
+	equity: {
+		id: 42,
+		code: "401000",
+		name: "Share capital / equity",
+		account_type: "equity",
+	},
+	undistributedProfits: {
+		id: 109,
+		code: "999999",
+		name: "Undistributed Profits/Losses",
+		account_type: "equity_unaffected",
+	},
+	cashDifferenceGain: {
+		id: 106,
+		code: "999001",
+		name: "Cash Difference Gain",
+		account_type: "income_other",
+	},
+	cashDifferenceLoss: {
+		id: 107,
+		code: "999002",
+		name: "Cash Difference Loss",
+		account_type: "expense",
+	},
+};
+
 export async function POST(request: NextRequest) {
 	try {
 		const membersData: MemberData[] = await request.json();
+		const skipped: string[] = [];
+		const failed: string[] = [];
 
 		const importedCount = await prisma.$transaction(async (prisma) => {
 			let count = 0;
+			const safeAmount = (val: any) => Number(val) || 0;
 
 			for (const memberData of membersData) {
 				const memberNumber = memberData["Employee Number"];
@@ -40,6 +163,7 @@ export async function POST(request: NextRequest) {
 					console.error(
 						`Invalid member number or ET number for member: ${memberData.Name}`
 					);
+					skipped.push(memberData.Name);
 					continue;
 				}
 
@@ -88,14 +212,20 @@ export async function POST(request: NextRequest) {
 						willingDeposit: {
 							increment: memberData["Credit Association Willing Deposit"],
 						},
-						totalContributions: {
-							increment:
-								memberData["Credit Association Savings"] +
-								memberData["Credit Association Cost of Share"] +
-								memberData["Credit Association Registration Fee"] +
-								memberData["Credit Association Purchases"] +
-								memberData["Credit Association Loan Repayment"],
-						},
+						totalContributions:
+							safeAmount(memberData["Credit Association Savings"]) +
+							safeAmount(memberData["Credit Association Cost of Share"]) +
+							safeAmount(memberData["Credit Association Registration Fee"]) +
+							safeAmount(memberData["Credit Association Purchases"]) +
+							safeAmount(memberData["Credit Association Loan Repayment"]),
+						// totalContributions: {
+						// 	increment:
+						// 		memberData["Credit Association Savings"] +
+						// 		memberData["Credit Association Cost of Share"] +
+						// 		memberData["Credit Association Registration Fee"] +
+						// 		memberData["Credit Association Purchases"] +
+						// 		memberData["Credit Association Loan Repayment"],
+						// },
 					},
 					create: {
 						memberId: member.id,
@@ -120,7 +250,9 @@ export async function POST(request: NextRequest) {
 							prisma,
 							member.id,
 							memberData["Credit Association Loan Repayment"],
-							jsDate
+							jsDate,
+							"ERP_PAYROLL", // sourceType
+							`BULK_IMPORT_${jsDate.getTime()}`
 						);
 					} catch (error) {
 						console.error(
@@ -156,16 +288,27 @@ export async function POST(request: NextRequest) {
 					},
 				];
 
+				const filteredTransactions = transactions.filter((t) => t.amount > 0);
+
 				await prisma.transaction.createMany({
-					data: transactions
-						.filter((t) => t.amount > 0)
-						.map((t) => ({
-							memberId: member.id,
-							type: t.type as TransactionType,
-							amount: t.amount,
-							transactionDate: jsDate,
-						})),
+					data: filteredTransactions.map((t) => ({
+						memberId: member.id,
+						type: t.type as TransactionType,
+						amount: t.amount,
+						transactionDate: jsDate,
+					})),
 				});
+
+				for (const tx of filteredTransactions) {
+					await createJournalEntry({
+						type: mapToAccountingType(tx.type as TransactionType),
+						principal: tx.amount,
+						interest: 50,
+						date: jsDate,
+						reference: `${tx.type}-${etNumber}-${jsDate.toISOString()}`,
+						journalId: 3,
+					});
+				}
 
 				count++;
 			}
@@ -173,9 +316,10 @@ export async function POST(request: NextRequest) {
 			return count;
 		});
 
-		return NextResponse.json({ importedCount });
+		return NextResponse.json({ importedCount, skipped, failed });
 	} catch (error: any) {
 		console.error("Error importing members:", error);
+		// failed.push(member.name);
 		return NextResponse.json(
 			{ error: "Failed to import members", details: error.message },
 			{ status: 500 }
@@ -187,7 +331,9 @@ async function handleLoanRepayment(
 	prisma: any,
 	memberId: number,
 	repaymentAmount: number,
-	repaymentDate: Date
+	repaymentDate: Date,
+	sourceType: string = "ERP_PAYROLL", // default sourceType
+	reference?: string
 ) {
 	const activeLoan = await prisma.loan.findFirst({
 		where: {
@@ -212,60 +358,78 @@ async function handleLoanRepayment(
 	for (const repayment of activeLoan.loanRepayments) {
 		if (remainingAmount <= 0) break;
 
-		const amountToApply = Math.min(remainingAmount, repayment.amount);
+		const unpaidPortion =
+			Number(repayment.amount) - Number(repayment.paidAmount);
 
-		if (amountToApply === repayment.amount) {
-			// Fully paid this repayment
-			await prisma.loanRepayment.update({
-				where: { id: repayment.id },
-				data: {
-					repaymentDate,
-					status: "PAID",
-				},
-			});
-		} else {
-			// Partial payment - split into PAID and remaining PENDING
-			await prisma.loanRepayment.update({
-				where: { id: repayment.id },
-				data: {
-					amount: amountToApply,
-					repaymentDate,
-					status: "PAID",
-				},
-			});
+		if (unpaidPortion <= 0) continue;
 
-			await prisma.loanRepayment.create({
-				data: {
-					loanId: activeLoan.id,
-					amount: repayment.amount - amountToApply,
-					repaymentDate: repayment.repaymentDate,
-					status: "PENDING",
-					sourceType: "ERP_PAYROLL",
-				},
-			});
-		}
+		const amountToApply = Math.min(remainingAmount, unpaidPortion);
+
+		if (amountToApply <= 0) continue;
+
+		const newPaidAmount = Number(repayment.paidAmount) + amountToApply;
+		const newStatus =
+			newPaidAmount >= Number(repayment.amount) ? "PAID" : "PENDING";
+
+		await prisma.loanRepayment.update({
+			where: { id: repayment.id },
+			data: {
+				paidAmount: newPaidAmount,
+				repaymentDate,
+				status: newStatus,
+			},
+		});
 
 		remainingAmount -= amountToApply;
 	}
 
-	// Create a transaction record
-	await prisma.transaction.create({
-		data: {
-			memberId,
-			type: TransactionType.LOAN_REPAYMENT,
-			amount: repaymentAmount,
-			transactionDate: repaymentDate,
-		},
-	});
+	// Record the actual LoanPayment
+	if (repaymentAmount > 0) {
+		await prisma.loanPayment.create({
+			data: {
+				loanId: activeLoan.id,
+				memberId,
+				amount: repaymentAmount,
+				paymentDate: repaymentDate,
+				sourceType,
+				reference,
+			},
+		});
+	}
 
-	// Recalculate total repaid (based on PAID records)
+	// Create transaction log
+	if (repaymentAmount > 0) {
+		await prisma.transaction.create({
+			data: {
+				memberId,
+				type: TransactionType.LOAN_REPAYMENT,
+				amount: repaymentAmount,
+				transactionDate: repaymentDate,
+				reference,
+			},
+		});
+
+		await createJournalEntry({
+			type: mapToAccountingType(
+				TransactionType.LOAN_REPAYMENT as TransactionType
+			),
+			principal: repaymentAmount,
+			interest: 50,
+			date: repaymentDate,
+			reference: `${
+				TransactionType.LOAN_REPAYMENT
+			}-${memberId}-${repaymentDate.toISOString()}`,
+			journalId: 3,
+		});
+	}
+
+	// Recalculate remaining loan balance
 	const totalRepaidResult = await prisma.loanRepayment.aggregate({
-		where: { loanId: activeLoan.id, status: "PAID" },
-		_sum: { amount: true },
+		where: { loanId: activeLoan.id },
+		_sum: { paidAmount: true },
 	});
-	const totalRepaid = totalRepaidResult._sum.amount || 0;
-
-	const newRemaining = activeLoan.amount - totalRepaid;
+	const totalRepaid = totalRepaidResult._sum.paidAmount || 0;
+	const newRemaining = Number(activeLoan.amount) - Number(totalRepaid);
 
 	await prisma.loan.update({
 		where: { id: activeLoan.id },
@@ -284,102 +448,356 @@ async function handleLoanRepayment(
 	}
 }
 
+function mapToAccountingType(transactionType: string): string {
+	switch (transactionType) {
+		case "SAVINGS":
+		case "WILLING_DEPOSIT":
+		case "REGISTRATION_FEE":
+		case "MEMBERSHIP_FEE":
+		case "COST_OF_SHARE":
+			return "deposit";
+		case "PURCHASE":
+			return "withdrawal";
+		case "LOAN_REPAYMENT":
+			return "loanRepayment";
+		default:
+			throw new Error(`Unknown accounting mapping for: ${transactionType}`);
+	}
+}
 
-// async function handleLoanRepayment(
-// 	prisma: any,
-// 	memberId: number,
-// 	repaymentAmount: number,
-// 	repaymentDate: Date
-// ) {
-// 	// Find the last/recent DISBURSED loan for the member
-// 	const activeLoan = await prisma.loan.findFirst({
-// 		where: {
-// 			memberId: memberId,
-// 			status: LoanApprovalStatus.DISBURSED,
-// 		},
-// 		include: {
-// 			loanRepayments: {
-// 				orderBy: { repaymentDate: "asc" },
-// 				where: { status: "PENDING" },
-// 			},
-// 		},
-// 		orderBy: {
-// 			createdAt: "desc",
-// 		},
-// 	});
+async function createJournalEntry(transactionDetails: any) {
+	try {
+		// Odoo server details
+		const host = "116.202.104.180";
+		const port = 8069;
+		const db = "test";
+		const username = "admin";
+		const password = "admin";
 
-// 	if (!activeLoan) {
-// 		throw new Error("No active loan found for the member");
-// 	}
+		// Define account mapping
+		const accounts = {
+			cash: {
+				id: 102,
+				code: "211002",
+				name: "Cash",
+				account_type: "asset_cash",
+			},
+			bank: {
+				id: 101,
+				code: "211001",
+				name: "Bank",
+				account_type: "asset_cash",
+			},
+			tradeDebtors: {
+				id: 9,
+				code: "221100",
+				name: "Trade Debtors",
+				account_type: "asset_receivable",
+			},
+			suspense: {
+				id: 5,
+				code: "220100",
+				name: "Suspense",
+				account_type: "asset_receivable",
+			},
+			otherDeposits: {
+				id: 38,
+				code: "305400",
+				name: "Other deposits",
+				account_type: "liability_current",
+			},
+			commercialLoan: {
+				id: 40,
+				code: "310300",
+				name: "Commercial Loan",
+				account_type: "liability_current",
+			},
+			salesIncome: {
+				id: 1,
+				code: "110000",
+				name: "Sales of Goods and Services",
+				account_type: "income",
+			},
+			exchangeGain: {
+				id: 98,
+				code: "120000",
+				name: "Foreign Exchange Currency Gain Account",
+				account_type: "income_other",
+			},
+			interestExpense: {
+				id: 97,
+				code: "643400",
+				name: "Payments of interest and bank charges on local debt",
+				account_type: "expense",
+			},
+			feeExpense: {
+				id: 81,
+				code: "625600",
+				name: "Fees and charges",
+				account_type: "expense",
+			},
+			equity: {
+				id: 42,
+				code: "401000",
+				name: "Share capital / equity",
+				account_type: "equity",
+			},
+			undistributedProfits: {
+				id: 109,
+				code: "999999",
+				name: "Undistributed Profits/Losses",
+				account_type: "equity_unaffected",
+			},
+			cashDifferenceGain: {
+				id: 106,
+				code: "999001",
+				name: "Cash Difference Gain",
+				account_type: "income_other",
+			},
+			cashDifferenceLoss: {
+				id: 107,
+				code: "999002",
+				name: "Cash Difference Loss",
+				account_type: "expense",
+			},
+		};
 
-// 	// Find all pending repayments
-// 	const pendingRepayments = activeLoan.loanRepayments;
+		// Initialize line items
+		const lineItems = [];
 
-// 	let remainingAmount = repaymentAmount;
-// 	for (const repayment of pendingRepayments) {
-// 		if (remainingAmount <= 0) break;
+		// Handle different transaction types
+		switch (transactionDetails.type) {
+			case "SAVINGS":
+			case "WILLING_DEPOSIT":
+				lineItems.push(
+					[
+						0,
+						0,
+						{
+							account_id: accounts.cash.id,
+							name: "Cash",
+							debit: transactionDetails.amount,
+							credit: 0,
+						},
+					],
+					[
+						0,
+						0,
+						{
+							account_id: accounts.otherDeposits.id,
+							name: "Deposit Liability",
+							debit: 0,
+							credit: transactionDetails.amount,
+						},
+					]
+				);
+				break;
 
-// 		const amountToApply = Math.min(remainingAmount, repayment.amount);
+			case "LOAN_DISBURSEMENT":
+				lineItems.push(
+					[
+						0,
+						0,
+						{
+							account_id: accounts.tradeDebtors.id,
+							name: "Loan Receivable",
+							debit: transactionDetails.amount,
+							credit: 0,
+						},
+					],
+					[
+						0,
+						0,
+						{
+							account_id: accounts.cash.id,
+							name: "Cash",
+							debit: 0,
+							credit: transactionDetails.amount,
+						},
+					]
+				);
+				break;
 
-// 		// Update the repayment
-// 		await prisma.loanRepayment.update({
-// 			where: { id: repayment.id },
-// 			data: {
-// 				amount: amountToApply,
-// 				repaymentDate: repaymentDate,
-// 				status: "PAID",
-// 			},
-// 		});
+			case "LOAN_REPAYMENT":
+				lineItems.push(
+					[
+						0,
+						0,
+						{
+							account_id: accounts.cash.id,
+							name: "Cash",
+							debit: transactionDetails.principal,
+							credit: 0,
+						},
+					],
+					[
+						0,
+						0,
+						{
+							account_id: accounts.tradeDebtors.id,
+							name: "Loan Receivable",
+							debit: 0,
+							credit: transactionDetails.principal,
+						},
+					]
+				);
+				if (transactionDetails.interest > 0) {
+					lineItems.push(
+						[
+							0,
+							0,
+							{
+								account_id: accounts.cash.id,
+								name: "Cash",
+								debit: transactionDetails.interest,
+								credit: 0,
+							},
+						],
+						[
+							0,
+							0,
+							{
+								account_id: accounts.salesIncome.id,
+								name: "Interest Income",
+								debit: 0,
+								credit: transactionDetails.interest,
+							},
+						]
+					);
+				}
+				break;
 
-// 		remainingAmount -= amountToApply;
+			case "WITHDRAWAL":
+				lineItems.push(
+					[
+						0,
+						0,
+						{
+							account_id: accounts.otherDeposits.id,
+							name: "Deposit Liability",
+							debit: transactionDetails.amount,
+							credit: 0,
+						},
+					],
+					[
+						0,
+						0,
+						{
+							account_id: accounts.cash.id,
+							name: "Cash",
+							debit: 0,
+							credit: transactionDetails.amount,
+						},
+					]
+				);
+				break;
 
-// 		// If there's still an unpaid portion, create a new pending repayment
-// 		if (amountToApply < repayment.amount) {
-// 			await prisma.loanRepayment.create({
-// 				data: {
-// 					loanId: activeLoan.id,
-// 					amount: repayment.amount - amountToApply,
-// 					repaymentDate: repayment.repaymentDate,
-// 					status: "PENDING",
-// 					sourceType: "ERP_PAYROLL",
-// 				},
-// 			});
-// 		}
-// 	}
+			case "INTEREST_INCOME":
+				lineItems.push(
+					[
+						0,
+						0,
+						{
+							account_id: accounts.cash.id,
+							name: "Cash",
+							debit: transactionDetails.amount,
+							credit: 0,
+						},
+					],
+					[
+						0,
+						0,
+						{
+							account_id: accounts.salesIncome.id,
+							name: "Interest Income",
+							debit: 0,
+							credit: transactionDetails.amount,
+						},
+					]
+				);
+				break;
 
-// 	// Create a transaction record
-// 	await prisma.transaction.create({
-// 		data: {
-// 			memberId: memberId,
-// 			type: TransactionType.LOAN_REPAYMENT,
-// 			amount: repaymentAmount,
-// 			transactionDate: repaymentDate,
-// 		},
-// 	});
+			case "INTEREST_EXPENSE":
+				lineItems.push(
+					[
+						0,
+						0,
+						{
+							account_id: accounts.interestExpense.id,
+							name: "Interest Expense",
+							debit: transactionDetails.amount,
+							credit: 0,
+						},
+					],
+					[
+						0,
+						0,
+						{
+							account_id: accounts.cash.id,
+							name: "Cash",
+							debit: 0,
+							credit: transactionDetails.amount,
+						},
+					]
+				);
+				break;
 
-// 	// Update loan balance
-// 	const totalRepaid = await prisma.loanRepayment.aggregate({
-// 		where: { loanId: activeLoan.id, status: "PAID" },
-// 		_sum: { amount: true },
-// 	});
+			default:
+				throw new Error(
+					`Unsupported transaction type: ${transactionDetails.type}`
+				);
+		}
 
-// 	const updatedLoanBalance =
-// 		activeLoan.remainingAmount - (totalRepaid._sum.amount || 0);
-// 	await prisma.loan.update({
-// 		where: { id: activeLoan.id },
-// 		data: {
-// 			// amount: updatedLoanBalance,
-// 			remainingAmount: updatedLoanBalance,
-// 		},
-// 	});
+		// Create XML-RPC client
+		const commonClient = xmlrpc.createClient({
+			host,
+			port,
+			path: "/xmlrpc/2/common",
+		});
 
-// 	// If the loan is fully repaid, update its status
-// 	if (updatedLoanBalance <= 0) {
-// 		await prisma.loan.update({
-// 			where: { id: activeLoan.id },
-// 			data: {
-// 				status: LoanApprovalStatus.REPAID,
-// 			},
-// 		});
-// 	}
-// }
+		// Authenticate and create journal entry
+		const uid = await new Promise((resolve, reject) => {
+			commonClient.methodCall(
+				"authenticate",
+				[db, username, password, {}],
+				(error: any, result: any) => {
+					if (error) reject(error);
+					else resolve(result);
+				}
+			);
+		});
+
+		const objectClient = xmlrpc.createClient({
+			host,
+			port,
+			path: "/xmlrpc/2/object",
+		});
+
+		const journalEntry = {
+			move_type: "entry",
+			journal_id: transactionDetails.journalId || 3,
+			date: transactionDetails.date || new Date().toISOString().split("T")[0],
+			ref:
+				transactionDetails.reference ||
+				`Microfinance Transaction: ${transactionDetails.type}`,
+			line_ids: lineItems,
+		};
+
+		const entryId = await new Promise((resolve, reject) => {
+			objectClient.methodCall(
+				"execute_kw",
+				[db, uid, password, "account.move", "create", [journalEntry]],
+				(error: any, result: any) => {
+					if (error) reject(error);
+					else resolve(result);
+				}
+			);
+		});
+
+		console.log(`✅ Journal entry created with ID: ${entryId}`);
+		return entryId;
+	} catch (error: any) {
+		console.error("❌ Error in createJournalEntry:", error.message);
+		throw error;
+	}
+}
