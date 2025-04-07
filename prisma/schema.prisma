@@ -114,7 +114,8 @@ model Loan {
 model LoanRepayment {
   id            Int                 @id @default(autoincrement())
   loanId        Int
-  amount        Decimal
+  amount        Decimal             // scheduled repayment
+  paidAmount    Decimal             @default(0) // total paid toward this scheduled repayment
   repaymentDate DateTime            @default(now())
   reference     String?
   sourceType    RepaymentSourceType
@@ -123,6 +124,7 @@ model LoanRepayment {
   createdAt     DateTime            @default(now())
   updatedAt     DateTime            @updatedAt
 }
+
 
 model LoanApprovalLog {
   id               Int                @id @default(autoincrement())
