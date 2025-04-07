@@ -139,8 +139,8 @@ export const LineChart: React.FC<ChartProps> = ({
 interface PieChartProps {
 	data: { name: string; value: number }[];
 	index: string;
-	categories: string[];
-	colors: string[];
+	categories: string[] | any;
+	colors?: string[];
 	valueFormatter: (value: number) => string;
 	className?: string;
 }
@@ -167,7 +167,14 @@ export const PieChart: React.FC<PieChartProps> = ({
 						fill="#8884d8"
 						label>
 						{data.map((entry, i) => (
-							<Cell key={`cell-${i}`} fill={colors[i % colors.length]} />
+							<Cell
+								key={`cell-${i}`}
+								fill={
+									colors && colors.length > 0
+										? colors[i % colors.length]
+										: `#${Math.floor(Math.random() * 16777215).toString(16)}`
+								}
+							/>
 						))}
 					</Pie>
 					<Tooltip formatter={valueFormatter} />
@@ -178,18 +185,48 @@ export const PieChart: React.FC<PieChartProps> = ({
 	);
 };
 
+// "use client";
+
 // import type React from "react";
+
+// import dynamic from "next/dynamic";
 // import {
-// 	AreaChart as RechartsAreaChart,
-// 	Area,
+// 	LineChart as RechartsLineChart,
+// 	Line,
 // 	XAxis,
 // 	YAxis,
 // 	CartesianGrid,
 // 	Tooltip,
 // 	ResponsiveContainer,
+// 	PieChart as RechartsPieChart,
+// 	Pie,
+// 	Cell,
+// 	Legend,
+// 	BarChart as RechartsBarChart,
+// 	Bar,
+// 	AreaChart as RechartsAreaChart,
+// 	Area,
 // } from "recharts";
-// import { BarChart as RechartsBarChart, Bar } from "recharts";
-// import { LineChart as RechartsLineChart, Line } from "recharts";
+
+// const AreaChartComponent = dynamic(
+// 	() => import("recharts").then((recharts) => recharts.AreaChart),
+// 	{ ssr: false }
+// );
+
+// const BarChartComponent = dynamic(
+// 	() => import("recharts").then((recharts) => recharts.BarChart),
+// 	{ ssr: false }
+// );
+
+// const LineChartComponent = dynamic(
+// 	() => import("recharts").then((recharts) => recharts.LineChart),
+// 	{ ssr: false }
+// );
+
+// const PieChartComponent = dynamic(
+// 	() => import("recharts").then((recharts) => recharts.PieChart),
+// 	{ ssr: false }
+// );
 
 // interface ChartProps {
 // 	data: { name: string; [key: string]: number | string }[];
@@ -281,6 +318,48 @@ export const PieChart: React.FC<PieChartProps> = ({
 // 						/>
 // 					))}
 // 				</RechartsLineChart>
+// 			</ResponsiveContainer>
+// 		</div>
+// 	);
+// };
+
+// interface PieChartProps {
+// 	data: { name: string; value: number }[];
+// 	index: string;
+// 	categories: string[];
+// 	colors: string[];
+// 	valueFormatter: (value: number) => string;
+// 	className?: string;
+// }
+
+// export const PieChart: React.FC<PieChartProps | any> = ({
+// 	data,
+// 	index,
+// 	categories,
+// 	colors,
+// 	valueFormatter,
+// 	className,
+// }) => {
+// 	return (
+// 		<div className={className}>
+// 			<ResponsiveContainer width="100%" height="100%">
+// 				<RechartsPieChart>
+// 					<Pie
+// 						data={data}
+// 						dataKey="value"
+// 						nameKey="name"
+// 						cx="50%"
+// 						cy="50%"
+// 						outerRadius={80}
+// 						fill="#8884d8"
+// 						label>
+// 						{data.map((entry, i) => (
+// 							<Cell key={`cell-${i}`} fill={colors[i % colors.length]} />
+// 						))}
+// 					</Pie>
+// 					<Tooltip formatter={valueFormatter} />
+// 					<Legend />
+// 				</RechartsPieChart>
 // 			</ResponsiveContainer>
 // 		</div>
 // 	);

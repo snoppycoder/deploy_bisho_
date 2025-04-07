@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
 					create: {
 						documentType: "AGREEMENT",
 						documentContent: "",
-						uploadedByUserId: 1,
+						uploadedByUserId: Number(process.env.ADMIN_ID),
 						fileName: fileName,
 						mimeType: agreement.type,
 						documentUrl: documentUrl,
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
 
 				approvalLogs: {
 					create: {
-						approvedByUserId: 1,
+						approvedByUserId: Number(process.env.ADMIN_ID),
 						role: "MEMBER",
 						status: "PENDING",
 						approvalOrder: 0,
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
 		// Create a notification for the loan officer
 		await prisma.notification.create({
 			data: {
-				userId: 1, // This should be the loan officer's ID in a real scenario
+				userId: Number(process.env.ADMIN_ID), // This should be the loan officer's ID in a real scenario
 				title: "New Loan Application",
 				message: `A new loan application has been submitted by ${member.name}`,
 				type: "LOAN_APPLICATION_SUBMITTED",

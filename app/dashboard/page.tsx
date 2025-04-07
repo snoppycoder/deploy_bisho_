@@ -94,7 +94,12 @@ interface DashboardData {
 		status: string;
 		createdAt: string;
 	}[];
-	topSavers: { memberId: number; memberName: string; totalSavings: number }[];
+	topSavers: {
+		memberId: number;
+		memberName: string;
+		totalSavings: number;
+		etNumber: any;
+	}[];
 }
 
 // Animation variants for staggered animations
@@ -159,32 +164,46 @@ export default function DashboardPage() {
 	const router = useRouter();
 	const chartContainerRef = useRef<HTMLDivElement>(null);
 
-	useEffect(() => {
-		const fetchDashboardData = async () => {
-			setIsLoading(true);
-			try {
-				const response = await fetch("/api/dashboard");
-				if (!response.ok) {
-					throw new Error("Failed to fetch dashboard data");
-				}
-				const data = await response.json();
-				setDashboardData(data);
-			} catch (error) {
-				console.error("Error fetching dashboard data:", error);
-			} finally {
-				setIsLoading(false);
+	// Update the fetchDashboardData function to bypass cache
+	const fetchDashboardData = async () => {
+		setIsLoading(true);
+		try {
+			// Add timestamp and cache control to ensure fresh data
+			const response = await fetch(`/api/dashboard?t=${new Date().getTime()}`, {
+				cache: "no-store",
+				headers: {
+					"Cache-Control": "no-cache, no-store, must-revalidate",
+					"Pragma": "no-cache",
+					"Expires": "0",
+				},
+			});
+			if (!response.ok) {
+				throw new Error("Failed to fetch dashboard data");
 			}
-		};
+			const data = await response.json();
+			setDashboardData(data);
+		} catch (error) {
+			console.error("Error fetching dashboard data:", error);
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
-		fetchDashboardData();
-	}, []);
-
+	// Update the refreshData function to use the same cache-busting approach
 	const refreshData = async () => {
 		if (isRefreshing) return;
 
 		setIsRefreshing(true);
 		try {
-			const response = await fetch("/api/dashboard");
+			// Add timestamp and cache control to ensure fresh data
+			const response = await fetch(`/api/dashboard?t=${new Date().getTime()}`, {
+				cache: "no-store",
+				headers: {
+					"Cache-Control": "no-cache, no-store, must-revalidate",
+					"Pragma": "no-cache",
+					"Expires": "0",
+				},
+			});
 			if (!response.ok) {
 				throw new Error("Failed to fetch dashboard data");
 			}
@@ -196,6 +215,19 @@ export default function DashboardPage() {
 			setIsRefreshing(false);
 		}
 	};
+
+	useEffect(() => {
+		// Initial data fetch
+		fetchDashboardData();
+
+		// Set up polling interval (every 5 minutes)
+		const intervalId = setInterval(() => {
+			fetchDashboardData();
+		}, 5 * 60 * 1000);
+
+		// Clean up interval on component unmount
+		return () => clearInterval(intervalId);
+	}, []);
 
 	const formatCurrency = (amount: number) => {
 		return new Intl.NumberFormat("et-ET", {
@@ -671,7 +703,7 @@ export default function DashboardPage() {
 							<Button
 								size="sm"
 								className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700"
-								onClick={() => router.push("/dashboard/loans/pending")}>
+								onClick={() => router.push("/dashboard/loans/details")}>
 								Review Pending Loans
 							</Button>
 						</CardFooter>
@@ -977,7 +1009,7 @@ export default function DashboardPage() {
 															className="hover:bg-muted/30 cursor-pointer transition-colors"
 															onClick={() =>
 																router.push(
-																	`/dashboard/members/${saver.memberId}`
+																	`/dashboard/members/${saver.etNumber}`
 																)
 															}>
 															<TableCell className="font-medium">

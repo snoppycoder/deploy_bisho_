@@ -66,9 +66,9 @@ async function main() {
 	// const memberUsers = [
 	// 	{
 	// 		user: {
-	// 			name: "Abebe Teka",
+	// 			name: "John Doe",
 	// 			email: "john.doe@example.com",
-	// 			phone: "0913228892",
+	// 			phone: "5678901234",
 	// 			password: await bcrypt.hash("password123", 10),
 	// 			role: UserRole.MEMBER,
 	// 		},
