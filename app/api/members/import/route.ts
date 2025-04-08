@@ -33,15 +33,15 @@ interface Account {
 	account_type: string;
 }
 
-interface TransactionDetails {
-	type: string;
-	amount?: number;
-	principal?: number;
-	interest?: number;
-	date?: string;
-	reference?: string;
-	journalId?: number;
-}
+// interface TransactionDetails {
+// 	type: string;
+// 	amount?: number;
+// 	amount?: number;
+// 	interest?: number;
+// 	date?: string;
+// 	reference?: string;
+// 	journalId?: number;
+// }
 
 interface JournalLineItem {
 	account_id: number;
@@ -151,170 +151,175 @@ export async function POST(request: NextRequest) {
 		const skipped: string[] = [];
 		const failed: string[] = [];
 
-		const importedCount = await prisma.$transaction(async (prisma) => {
-			let count = 0;
-			const safeAmount = (val: any) => Number(val) || 0;
+		const importedCount = await prisma.$transaction(
+			async (prisma) => {
+				let count = 0;
+				const safeAmount = (val: any) => Number(val) || 0;
 
-			for (const memberData of membersData) {
-				const memberNumber = memberData["Employee Number"];
-				const etNumber = memberData["ET Number"];
+				for (const memberData of membersData) {
+					const memberNumber = memberData["Employee Number"];
+					const etNumber = memberData["ET Number"];
 
-				if (isNaN(memberNumber) || isNaN(etNumber)) {
-					console.error(
-						`Invalid member number or ET number for member: ${memberData.Name}`
-					);
-					skipped.push(memberData.Name);
-					continue;
-				}
-
-				const jsDate = new Date(
-					(memberData["Effective Date"] - 25569) * 86400 * 1000
-				);
-
-				// Upsert member
-				const member = await prisma.member.upsert({
-					where: { etNumber },
-					update: {
-						etNumber,
-						name: memberData.Name,
-						division: memberData.Division,
-						department: memberData.Department || null,
-						section: memberData.Section,
-						group: memberData.Group,
-					},
-					create: {
-						memberNumber,
-						etNumber,
-						name: memberData.Name,
-						division: memberData.Division,
-						department: memberData.Department || null,
-						section: memberData.Section,
-						group: memberData.Group,
-					},
-				});
-
-				// Create or update MemberBalance
-				await prisma.memberBalance.upsert({
-					where: { memberId: member.id },
-					update: {
-						totalSavings: {
-							increment: memberData["Credit Association Savings"],
-						},
-						costOfShare: {
-							increment: memberData["Credit Association Cost of Share"],
-						},
-						registrationFee: {
-							increment: memberData["Credit Association Registration Fee"],
-						},
-						membershipFee: {
-							increment: memberData["Credit Association Membership Fee"],
-						},
-						willingDeposit: {
-							increment: memberData["Credit Association Willing Deposit"],
-						},
-						totalContributions:
-							safeAmount(memberData["Credit Association Savings"]) +
-							safeAmount(memberData["Credit Association Cost of Share"]) +
-							safeAmount(memberData["Credit Association Registration Fee"]) +
-							safeAmount(memberData["Credit Association Purchases"]) +
-							safeAmount(memberData["Credit Association Loan Repayment"]),
-						// totalContributions: {
-						// 	increment:
-						// 		memberData["Credit Association Savings"] +
-						// 		memberData["Credit Association Cost of Share"] +
-						// 		memberData["Credit Association Registration Fee"] +
-						// 		memberData["Credit Association Purchases"] +
-						// 		memberData["Credit Association Loan Repayment"],
-						// },
-					},
-					create: {
-						memberId: member.id,
-						totalSavings: memberData["Credit Association Savings"],
-						costOfShare: memberData["Credit Association Cost of Share"],
-						registrationFee: memberData["Credit Association Registration Fee"],
-						membershipFee: memberData["Credit Association Membership Fee"],
-						willingDeposit: memberData["Credit Association Willing Deposit"],
-						totalContributions:
-							memberData["Credit Association Savings"] +
-							memberData["Credit Association Cost of Share"] +
-							memberData["Credit Association Registration Fee"] +
-							memberData["Credit Association Purchases"] +
-							memberData["Credit Association Loan Repayment"],
-					},
-				});
-
-				// Handle loan repayment
-				if (memberData["Credit Association Loan Repayment"] > 0) {
-					try {
-						await handleLoanRepayment(
-							prisma,
-							member.id,
-							memberData["Credit Association Loan Repayment"],
-							jsDate,
-							"ERP_PAYROLL", // sourceType
-							`BULK_IMPORT_${jsDate.getTime()}`
-						);
-					} catch (error) {
+					if (isNaN(memberNumber) || isNaN(etNumber)) {
 						console.error(
-							`Error processing loan repayment for member ${member.name}:`,
-							error
+							`Invalid member number or ET number for member: ${memberData.Name}`
 						);
-						// Consider how you want to handle this error (e.g., continue processing other members or throw)
+						skipped.push(memberData.Name);
+						continue;
 					}
-				}
 
-				// Create transactions
-				const transactions = [
-					{ type: "SAVINGS", amount: memberData["Credit Association Savings"] },
-					{
-						type: "MEMBERSHIP_FEE",
-						amount: memberData["Credit Association Membership Fee"],
-					},
-					{
-						type: "REGISTRATION_FEE",
-						amount: memberData["Credit Association Registration Fee"],
-					},
-					{
-						type: "COST_OF_SHARE",
-						amount: memberData["Credit Association Cost of Share"],
-					},
-					{
-						type: "PURCHASE",
-						amount: memberData["Credit Association Purchases"],
-					},
-					{
-						type: "WILLING_DEPOSIT",
-						amount: memberData["Credit Association Willing Deposit"],
-					},
-				];
+					const jsDate = new Date(
+						(memberData["Effective Date"] - 25569) * 86400 * 1000
+					);
 
-				const filteredTransactions = transactions.filter((t) => t.amount > 0);
-
-				await prisma.transaction.createMany({
-					data: filteredTransactions.map((t) => ({
-						memberId: member.id,
-						type: t.type as TransactionType,
-						amount: t.amount,
-						transactionDate: jsDate,
-					})),
-				});
-
-				for (const tx of filteredTransactions) {
-					await createJournalEntry({
-						type: mapToAccountingType(tx.type as TransactionType),
-						principal: tx.amount,
-						interest: 50,
-						date: jsDate,
-						reference: `${tx.type}-${etNumber}-${jsDate.toISOString()}`,
-						journalId: 3,
+					// Upsert member
+					const member = await prisma.member.upsert({
+						where: { etNumber },
+						update: {
+							etNumber,
+							name: memberData.Name,
+							division: memberData.Division,
+							department: memberData.Department || null,
+							section: memberData.Section,
+							group: memberData.Group,
+						},
+						create: {
+							memberNumber,
+							etNumber,
+							name: memberData.Name,
+							division: memberData.Division,
+							department: memberData.Department || null,
+							section: memberData.Section,
+							group: memberData.Group,
+						},
 					});
+
+					// Create or update MemberBalance
+					await prisma.memberBalance.upsert({
+						where: { memberId: member.id },
+						update: {
+							totalSavings: {
+								increment: memberData["Credit Association Savings"],
+							},
+							costOfShare: {
+								increment: memberData["Credit Association Cost of Share"],
+							},
+							registrationFee: {
+								increment: memberData["Credit Association Registration Fee"],
+							},
+							membershipFee: {
+								increment: memberData["Credit Association Membership Fee"],
+							},
+							willingDeposit: {
+								increment: memberData["Credit Association Willing Deposit"],
+							},
+							totalContributions:
+								safeAmount(memberData["Credit Association Savings"]) +
+								safeAmount(memberData["Credit Association Cost of Share"]) +
+								safeAmount(memberData["Credit Association Registration Fee"]) +
+								safeAmount(memberData["Credit Association Purchases"]) +
+								safeAmount(memberData["Credit Association Loan Repayment"]),
+						},
+						create: {
+							memberId: member.id,
+							totalSavings: memberData["Credit Association Savings"],
+							costOfShare: memberData["Credit Association Cost of Share"],
+							registrationFee:
+								memberData["Credit Association Registration Fee"],
+							membershipFee: memberData["Credit Association Membership Fee"],
+							willingDeposit: memberData["Credit Association Willing Deposit"],
+							totalContributions:
+								memberData["Credit Association Savings"] +
+								memberData["Credit Association Cost of Share"] +
+								memberData["Credit Association Registration Fee"] +
+								memberData["Credit Association Purchases"] +
+								memberData["Credit Association Loan Repayment"],
+						},
+					});
+
+					// Handle loan repayment
+					if (memberData["Credit Association Loan Repayment"] > 0) {
+						try {
+							await handleLoanRepayment(
+								prisma,
+								member.id,
+								memberData["Credit Association Loan Repayment"],
+								jsDate,
+								"ERP_PAYROLL", // sourceType
+								`BULK_IMPORT_${jsDate.getTime()}`
+							);
+						} catch (error) {
+							// return;
+							// console.error(
+							// 	`Error processing loan repayment for member ${member.name}:`,
+							// 	error
+							// );
+							// Consider how you want to handle this error (e.g., continue processing other members or throw)
+						}
+					}
+
+					// Create transactions
+					const transactions = [
+						{
+							type: "SAVINGS",
+							amount: memberData["Credit Association Savings"],
+						},
+						{
+							type: "MEMBERSHIP_FEE",
+							amount: memberData["Credit Association Membership Fee"],
+						},
+						{
+							type: "REGISTRATION_FEE",
+							amount: memberData["Credit Association Registration Fee"],
+						},
+						{
+							type: "COST_OF_SHARE",
+							amount: memberData["Credit Association Cost of Share"],
+						},
+						{
+							type: "PURCHASE",
+							amount: memberData["Credit Association Purchases"],
+						},
+						{
+							type: "WILLING_DEPOSIT",
+							amount: memberData["Credit Association Willing Deposit"],
+						},
+					];
+
+					const filteredTransactions = transactions.filter((t) => t.amount > 0);
+
+					await prisma.transaction.createMany({
+						data: filteredTransactions.map((t) => ({
+							memberId: member.id,
+							type: t.type as TransactionType,
+							amount: t.amount,
+							transactionDate: jsDate,
+						})),
+					});
+
+					const currentDate = new Date().toISOString().split("T")[0];
+
+					for (const tx of filteredTransactions) {
+						console.log({
+							TRANSACTION: tx,
+						});
+						await createJournalEntry({
+							type: mapToAccountingType(tx.type as TransactionType),
+							amount: Number(tx.amount),
+							interest: 50,
+							date: currentDate,
+							reference: `REF-${tx.type.toString()}-${member.name.toString()}-${currentDate}`,
+							journalId: 3,
+						});
+					}
+
+					count++;
 				}
 
-				count++;
-			}
-
-			return count;
-		});
+				return count;
+			},
+			{ timeout: 50000 }
+		);
 
 		return NextResponse.json({ importedCount, skipped, failed });
 	} catch (error: any) {
@@ -349,11 +354,23 @@ async function handleLoanRepayment(
 		orderBy: { createdAt: "desc" },
 	});
 
+	console.log({
+		activeLoan,
+		loanRepayments: activeLoan.loanRepayments,
+	});
+
 	if (!activeLoan) {
-		throw new Error("No active loan found for the member");
+		console.log("No active loan found for the member");
+		return;
+		// continue;
+		// throw new Error("No active loan found for the member");
 	}
 
 	let remainingAmount = repaymentAmount;
+
+	console.log({
+		remainingAmount,
+	});
 
 	for (const repayment of activeLoan.loanRepayments) {
 		if (remainingAmount <= 0) break;
@@ -363,6 +380,10 @@ async function handleLoanRepayment(
 
 		if (unpaidPortion <= 0) continue;
 
+		console.log({
+			unpaidPortion,
+		});
+
 		const amountToApply = Math.min(remainingAmount, unpaidPortion);
 
 		if (amountToApply <= 0) continue;
@@ -370,6 +391,11 @@ async function handleLoanRepayment(
 		const newPaidAmount = Number(repayment.paidAmount) + amountToApply;
 		const newStatus =
 			newPaidAmount >= Number(repayment.amount) ? "PAID" : "PENDING";
+
+		console.log({
+			newPaidAmount,
+			newStatus,
+		});
 
 		await prisma.loanRepayment.update({
 			where: { id: repayment.id },
@@ -383,19 +409,23 @@ async function handleLoanRepayment(
 		remainingAmount -= amountToApply;
 	}
 
+	console.log({
+		repaymentAmount,
+	});
+
 	// Record the actual LoanPayment
-	if (repaymentAmount > 0) {
-		await prisma.loanPayment.create({
-			data: {
-				loanId: activeLoan.id,
-				memberId,
-				amount: repaymentAmount,
-				paymentDate: repaymentDate,
-				sourceType,
-				reference,
-			},
-		});
-	}
+	// if (repaymentAmount > 0) {
+	// 	await prisma.loanPayment.create({
+	// 		data: {
+	// 			loanId: activeLoan.id,
+	// 			memberId,
+	// 			amount: repaymentAmount,
+	// 			paymentDate: repaymentDate,
+	// 			sourceType,
+	// 			reference,
+	// 		},
+	// 	});
+	// }
 
 	// Create transaction log
 	if (repaymentAmount > 0) {
@@ -409,13 +439,15 @@ async function handleLoanRepayment(
 			},
 		});
 
+		const currentDate = new Date().toISOString().split("T")[0];
+
 		await createJournalEntry({
 			type: mapToAccountingType(
 				TransactionType.LOAN_REPAYMENT as TransactionType
 			),
-			principal: repaymentAmount,
+			amount: repaymentAmount,
 			interest: 50,
-			date: repaymentDate,
+			date: currentDate,
 			reference: `${
 				TransactionType.LOAN_REPAYMENT
 			}-${memberId}-${repaymentDate.toISOString()}`,
@@ -428,8 +460,15 @@ async function handleLoanRepayment(
 		where: { loanId: activeLoan.id },
 		_sum: { paidAmount: true },
 	});
+
 	const totalRepaid = totalRepaidResult._sum.paidAmount || 0;
 	const newRemaining = Number(activeLoan.amount) - Number(totalRepaid);
+
+	console.log({
+		totalRepaidResult,
+		totalRepaid,
+		newRemaining,
+	});
 
 	await prisma.loan.update({
 		where: { id: activeLoan.id },
@@ -452,14 +491,17 @@ function mapToAccountingType(transactionType: string): string {
 	switch (transactionType) {
 		case "SAVINGS":
 		case "WILLING_DEPOSIT":
+			return "SAVINGS"; //deposit
 		case "REGISTRATION_FEE":
+			return "SAVINGS"; //deposit
 		case "MEMBERSHIP_FEE":
+			return "SAVINGS"; //deposit
 		case "COST_OF_SHARE":
-			return "deposit";
+			return "SAVINGS"; //deposit
 		case "PURCHASE":
-			return "withdrawal";
+			return "PURCHASE"; //withdrawal
 		case "LOAN_REPAYMENT":
-			return "loanRepayment";
+			return "LOAN_REPAYMENT"; //loanRepayment
 		default:
 			throw new Error(`Unknown accounting mapping for: ${transactionType}`);
 	}
@@ -626,7 +668,7 @@ async function createJournalEntry(transactionDetails: any) {
 						{
 							account_id: accounts.cash.id,
 							name: "Cash",
-							debit: transactionDetails.principal,
+							debit: transactionDetails.amount,
 							credit: 0,
 						},
 					],
@@ -637,7 +679,7 @@ async function createJournalEntry(transactionDetails: any) {
 							account_id: accounts.tradeDebtors.id,
 							name: "Loan Receivable",
 							debit: 0,
-							credit: transactionDetails.principal,
+							credit: transactionDetails.amount,
 						},
 					]
 				);
