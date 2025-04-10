@@ -73,16 +73,16 @@ export function MemberShell({ children }: MemberShellProps) {
 			href: "/member/kyc",
 			icon: Upload,
 		},
-		{
-			title: "Membership Requests",
-			href: "/member/membership",
-			icon: FileCheck,
-		},
-		{
-			title: "Willing Deposit Request",
-			href: "/member/willing-deposit/request",
-			icon: PiggyBank,
-		},
+		// {
+		// 	title: "Membership Requests",
+		// 	href: "/member/membership",
+		// 	icon: FileCheck,
+		// },
+		// {
+		// 	title: "Willing Deposit Request",
+		// 	href: "/member/willing-deposit/request",
+		// 	icon: PiggyBank,
+		// },
 		{
 			title: "Willing Deposit History",
 			href: "/member/willing-deposit/history",

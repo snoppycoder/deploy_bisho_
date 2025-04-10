@@ -336,13 +336,24 @@ import { getUserFromRequest, hasRequiredRole } from "@/lib/auth";
 import { UserRole } from "@prisma/client";
 
 // Define route access patterns
-const publicRoutes = ["/login", "/register", "/", "/admin/signup"];
+const publicRoutes = [
+	"/login",
+	"/register",
+	"/",
+	"/admin/signup",
+	"/admin/login",
+];
 const memberRoutes = ["/member"];
 const adminRoutes = ["/dashboard"];
 
 export async function middleware(request: NextRequest) {
 	const pathname = request.nextUrl.pathname;
 	// console.log("Middleware: Checking path", pathname);
+
+	// Check member routes
+	if (pathname.startsWith("/membership")) {
+		return NextResponse.next();
+	}
 
 	// Allow public routes
 	if (

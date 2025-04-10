@@ -300,9 +300,6 @@ export async function POST(request: NextRequest) {
 					const currentDate = new Date().toISOString().split("T")[0];
 
 					for (const tx of filteredTransactions) {
-						console.log({
-							TRANSACTION: tx,
-						});
 						await createJournalEntry({
 							type: mapToAccountingType(tx.type as TransactionType),
 							amount: Number(tx.amount),

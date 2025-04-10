@@ -38,14 +38,14 @@ export async function GET(
 					},
 				},
 				loanRepayments: {
-					select: {
-						id: true,
-						amount: true,
-						repaymentDate: true,
-						reference: true,
-						sourceType: true,
-						status: true,
-					},
+					// select: {
+					// 	id: true,
+					// 	amount: true,
+					// 	repaymentDate: true,
+					// 	reference: true,
+					// 	sourceType: true,
+					// 	status: true,
+					// },
 					orderBy: {
 						repaymentDate: "asc",
 					},
