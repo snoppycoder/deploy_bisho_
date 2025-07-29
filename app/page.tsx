@@ -70,16 +70,16 @@ export default function Home() {
 						<div className="mt-4 flex space-x-4 md:mt-0">
 							<Link href="/login?role=member">
 								<Button variant="outline" size="sm">
-									Member Login
+									Login
 								</Button>
 							</Link>
-							<Link href="/login?role=admin">
+							{/* <Link href="/login?role=admin">
 								<Button
 									size="sm"
 									className="bg-lime-500 text-white hover:bg-lime-600">
 									Admin Login
 								</Button>
-							</Link>
+							</Link> */}
 						</div>
 					</div>
 				</div>
@@ -102,22 +102,30 @@ export default function Home() {
 						</p>
 
 						<div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-							<Link href="/login?role=member">
+							{/* <Link href="/login?role=member">
 								<Button
 									size="lg"
 									className="group bg-lime-500 px-6 text-white hover:bg-lime-600">
-									Get Started
+									Apply Memebership
+									<ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+								</Button>
+							</Link> */}
+							<Link href="/membership">
+								<Button
+									size="lg"
+									className="group bg-lime-500 px-6 text-white hover:bg-lime-600">
+									Apply Memebership
 									<ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
 								</Button>
 							</Link>
-							<Link href="#features">
+							{/* <Link href="#features">
 								<Button
 									variant="outline"
 									size="lg"
 									className="border-white px-6 hover:bg-white text-blue-700">
 									Learn More
 								</Button>
-							</Link>
+							</Link> */}
 						</div>
 					</div>
 				</div>
