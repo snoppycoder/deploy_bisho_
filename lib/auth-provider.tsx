@@ -72,16 +72,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			const data = await res.json();
 			setUser(data.user);
 			console.log("AuthProvider: User logged in", data.user);
+			console.log("AuthProvider: User etNumber:", data.user.etNumber);
 
-			// If it's a member, fetch additional member details
-			if (data.user.role === "MEMBER") {
+			// If it's a member with etNumber, fetch additional member details
+			if (data.user.role === "MEMBER" && data.user.etNumber) {
+				console.log("AuthProvider: Fetching member details for ET Number:", data.user.etNumber);
 				const memberDetailsRes = await fetch(
 					`/api/members/${data.user.etNumber}`
 				);
 				if (memberDetailsRes.ok) {
 					const memberData = await memberDetailsRes.json();
 					console.log("AuthProvider: Member details fetched", memberData);
+				} else {
+					console.log("AuthProvider: Failed to fetch member details, status:", memberDetailsRes.status);
 				}
+			} else if (data.user.role === "MEMBER") {
+				console.log("AuthProvider: Member logged in but no etNumber available");
 			}
 
 			return true;

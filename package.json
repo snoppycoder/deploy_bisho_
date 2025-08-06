@@ -5,7 +5,8 @@
 	"scripts": {
 		"dev": "next dev",
 		"build": "next build",
-		"start": "next start -p 3008",
+		"start": "node server.js",
+		"server": "node server.js",
 		"lint": "next lint",
 		"seed": "node prisma/seed.js"
 	},
@@ -51,7 +52,9 @@
 		"cmdk": "1.0.4",
 		"date-fns": "^3.6.0",
 		"embla-carousel-react": "8.5.1",
+		"express": "^4.21.2",
 		"framer-motion": "^12.4.7",
+		"http-proxy-middleware": "^2.0.9",
 		"input-otp": "1.4.1",
 		"jose": "latest",
 		"lucide-react": "^0.454.0",
