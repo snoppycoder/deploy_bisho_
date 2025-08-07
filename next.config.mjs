@@ -17,7 +17,7 @@ const nextConfig = {
   rewrites: async () => [
     {
       source: '/api/:path*',
-      destination: `${process.env.API_URL || 'http://localhost:3000'}/api/:path*`,
+      destination: `${'https://bisho-backend-2.onrender.com' || 'http://localhost:3000'}/api/:path*`,
     },
   ],
 };
