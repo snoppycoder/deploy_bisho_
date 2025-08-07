@@ -26,7 +26,7 @@ app.prepare().then(() => {
 
   // Proxy API requests to the backend
   server.use('/api', createProxyMiddleware({
-    target: 'http://localhost:3000',
+    target: process.env.BACKEND_URL || 'http://localhost:3000',
     changeOrigin: true,
     pathRewrite: {
       '^/api': '/api', // Keep the /api prefix
