@@ -43,6 +43,7 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { membersAPI } from "@/lib/api";
 
 interface MemberData {
 	name: string;
@@ -129,28 +130,30 @@ export default function MemberDashboardPage() {
 	const [activeTab, setActiveTab] = useState("overview");
 
 	const fetchMemberData = async () => {
-		if (!user?.etNumber) return;
+		
+		if (!user?.user.etNumber) return;
 
 		try {
 			// Add timestamp to prevent caching
 			const timestamp = new Date().getTime();
-			const response = await fetch(
-				`/api/members/${user.etNumber}?include=transactions&t=${timestamp}`,
-				{
-					cache: "no-store",
-					headers: {
-						"Cache-Control": "no-cache, no-store, must-revalidate",
-						"Pragma": "no-cache",
-						"Expires": "0",
-					},
-				}
-			);
+			// const response = await fetch(
+			// 	`/api/members/${user["user"].etNumber}?include=transactions&t=${timestamp}`,
+			// 	{
+			// 		cache: "no-store",
+			// 		headers: {
+			// 			"Cache-Control": "no-cache, no-store, must-revalidate",
+			// 			"Pragma": "no-cache",
+			// 			"Expires": "0",
+			// 		},
+			// 	}
+			// );
 
-			if (!response.ok) {
-				throw new Error("Failed to fetch member data");
-			}
+			// if (!response.ok) {
+			// 	throw new Error("Failed to fetch member data");
+			// }
 
-			const data = await response.json();
+			// const data = await response.json();
+			const data = await membersAPI.getMember(user["user"].etNumber)
 			setMemberData(data.member);
 			setError(null);
 		} catch (err) {

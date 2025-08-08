@@ -301,7 +301,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 						<div className="mb-2 flex items-center gap-2">
 							<div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
 								<span className="text-lg font-medium text-blue-700">
-									{user["user"]?.name.charAt(0)}
+									{ user["user"] ? user["user"]?.name.charAt(0) : ""}
 								</span>
 							</div>
 							<div>
