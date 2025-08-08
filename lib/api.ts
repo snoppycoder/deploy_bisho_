@@ -61,14 +61,14 @@ export const authAPI = {
 
 export const dashboardAPI = {
   getDashboardData: async () => {
-    const response = await api.get("/api/dashboard");
+    const response = await api.get("/dashboard");
     return response.data;
   },
 };
 
 export const membersAPI = {
   getMember: async (etNumber: string) => {
-    const response = await api.get(`/api/members/${etNumber}`);
+    const response = await api.get(`/members/${etNumber}`);
     return response.data;
   },
 };

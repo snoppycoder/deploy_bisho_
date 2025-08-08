@@ -1,6 +1,5 @@
 import { jwtVerify, SignJWT } from "jose";
-import { cookies } from "next/headers";
-import type { NextRequest, NextResponse } from "next/server";
+import type { Request, Response } from "express";
 import type { UserRole } from "@prisma/client";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
@@ -15,6 +14,7 @@ export type JWTPayload = {
 	phone?: string;
 };
 
+// Sign a new JWT token
 export async function signJWT(payload: JWTPayload): Promise<string> {
 	const token = await new SignJWT(payload)
 		.setProtectedHeader({ alg: "HS256" })
@@ -25,6 +25,7 @@ export async function signJWT(payload: JWTPayload): Promise<string> {
 	return token;
 }
 
+// Verify the token
 export async function verifyJWT(token: string): Promise<JWTPayload | null> {
 	try {
 		const { payload } = await jwtVerify(token, secretKey);
@@ -36,59 +37,47 @@ export async function verifyJWT(token: string): Promise<JWTPayload | null> {
 	}
 }
 
-export async function getSession(): Promise<JWTPayload | null> {
-	const cookieStore = cookies();
-	const token = cookieStore.get("token")?.value;
-
+// Get session from request cookies
+export async function getSession(req: Request): Promise<JWTPayload | null> {
+	const token = req.cookies?.token;
 	if (!token) return null;
-
 	return verifyJWT(token);
 }
 
-export function setAuthCookie(
-	token: string,
-	response: NextResponse
-): NextResponse {
-	response.cookies.set({
-		name: "token",
-		value: token,
+// Set JWT token cookie
+export function setAuthCookie(token: string, res: Response): void {
+	res.cookie("token", token, {
 		httpOnly: true,
-		path: "/",
 		// secure: process.env.NODE_ENV === "production",
-		maxAge: 60 * 60 * 24, // 1 day
+		maxAge: 1000 * 60 * 60 * 24, // 1 day
+		path: "/",
 	});
-
-	return response;
 }
 
-export function removeAuthCookie(response: NextResponse): NextResponse {
-	response.cookies.set({
-		name: "token",
-		value: "",
+// Remove JWT token cookie
+export function removeAuthCookie(res: Response): void {
+	res.cookie("token", "", {
 		httpOnly: true,
-		path: "/",
-		// secure: process.env.NODE_ENV === "production",
 		maxAge: 0,
+		path: "/",
 	});
-
-	return response;
 }
 
-export function getTokenFromRequest(request: NextRequest): string | null {
-	const token = request.cookies.get("token")?.value;
+// Get token from Express request
+export function getTokenFromRequest(req: Request): string | null {
+	const token = req.cookies?.token;
 	console.log("Auth: Token from request", token ? "Found" : "Not found");
 	return token || null;
 }
 
-export async function getUserFromRequest(
-	request: NextRequest
-): Promise<JWTPayload | null> {
-	const token = getTokenFromRequest(request);
+// Get user from Express request
+export async function getUserFromRequest(req: Request): Promise<JWTPayload | null> {
+	const token = getTokenFromRequest(req);
 	if (!token) return null;
-
 	return verifyJWT(token);
 }
 
+// Check user role against allowed roles
 export function hasRequiredRole(
 	user: JWTPayload | null,
 	requiredRoles: (UserRole | "MEMBER")[]
