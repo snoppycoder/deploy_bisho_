@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -23,13 +23,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/auth-provider";
 import { cn } from "@/lib/utils";
+import { authAPI } from "@/lib/api";
 
 interface MemberShellProps {
 	children: React.ReactNode;
 }
 
 export function MemberShell({ children }: MemberShellProps) {
-	const { user, logout } = useAuth();
+	let { user, logout } = useAuth();
 	const pathname = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -165,11 +166,11 @@ export function MemberShell({ children }: MemberShellProps) {
 						<div className="mb-2 flex items-center gap-2">
 							<div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
 								<span className="text-sm font-medium text-blue-700">
-									{/* {user?.name.charAt(0)} */}
+									{user.user?.name.charAt(0)}
 								</span>
 							</div>
 							<div>
-								<p className="text-sm font-medium">{user?.name}</p>
+								<p className="text-sm font-medium">{user.user?.name}</p>
 								<p className="text-xs text-gray-500">Member</p>
 							</div>
 						</div>

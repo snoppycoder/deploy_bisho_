@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { FileText, Info, Calculator } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { membersAPI, membersLoanAPI } from "@/lib/api";
 
 interface Member {
 	id: number;
@@ -76,13 +77,9 @@ export default function LoanApplicationPage() {
 
 	const fetchMembers = async () => {
 		try {
-			const response = await fetch("/api/members");
-			if (response.ok) {
-				const data = await response.json();
-				setMembers(data.filter((member: Member) => member.id !== user?.id));
-			} else {
-				throw new Error("Failed to fetch members");
-			}
+			const data = await membersAPI.getMembers();
+			setMembers(data.filter((member: Member) => member.id !== user?.id));
+			
 		} catch (error) {
 			console.error("Error fetching members:", error);
 			toast({
@@ -96,13 +93,11 @@ export default function LoanApplicationPage() {
 	const fetchMemberData = async () => {
 		try {
 			setIsLoading(true);
-			const response = await fetch("/api/members/loan-eligibility");
-			if (response.ok) {
-				const data = await response.json();
-				setMemberData(data);
-			} else {
-				throw new Error("Failed to fetch member data");
-			}
+			const data = await membersLoanAPI.loanEligibilityReq();
+			setMemberData(data);
+			
+			// use axios here
+			
 		} catch (error) {
 			console.error("Error fetching member data:", error);
 			toast({
@@ -195,21 +190,25 @@ export default function LoanApplicationPage() {
 			return;
 		}
 
-		const formData = new FormData();
-		formData.append("amount", amount);
-		formData.append("interestRate", interestRate);
-		formData.append("tenureMonths", tenureMonths);
-		formData.append("purpose", purpose);
-		formData.append("coSigner1", coSigner1);
-		formData.append("coSigner2", coSigner2);
-		formData.append("agreement", file!);
+		// const formData = new FormData();
+		// formData.append("amount", amount);
+		// formData.append("interestRate", interestRate);
+		// formData.append("tenureMonths", tenureMonths);
+		// formData.append("purpose", purpose);
+		// formData.append("coSigner1", coSigner1);
+		// formData.append("coSigner2", coSigner2);
+		// formData.append("agreement", file!);
 
 		try {
-			const response = await fetch("/api/loans/apply", {
-				method: "POST",
-				body: formData,
-			});
-
+			const response = await membersLoanAPI.apply({
+				amount: Number.parseInt(amount),
+				interestRate : Number.parseInt(interestRate),
+				tenureMonths : Number.parseInt(tenureMonths) ,
+				purpose,
+				coSigner1,
+				coSigner2,
+				agreement: file!,
+			})
 			if (response.ok) {
 				const data = await response.json();
 				toast({

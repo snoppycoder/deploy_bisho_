@@ -32,9 +32,17 @@ import { cn } from "@/lib/utils";
 interface DashboardShellProps {
 	children: React.ReactNode;
 }
+type UserType  = {
+	etNumber : number,
+	id : number,
+	phone:string,
+	role: string
+}
 
 export function DashboardShell({ children }: DashboardShellProps) {
+
 	const { user, logout } = useAuth();
+	
 	const pathname = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -52,10 +60,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard",
 			icon: Home,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
@@ -63,10 +71,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/members",
 			icon: Users,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
@@ -74,10 +82,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/members/add",
 			icon: UserPlus,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
@@ -85,10 +93,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/loans/details",
 			icon: CreditCard,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		// {
@@ -117,7 +125,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			title: "Disburse Loans",
 			href: "/dashboard/loans/disburse",
 			icon: DollarSign,
-			roles: [UserRole.FINANCE_ADMIN],
+			roles: [UserRole.COMMITTEE],
 		},
 
 		{
@@ -125,17 +133,17 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/loans/approval-history",
 			icon: History,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
 			title: "Verify Loans",
 			href: "/dashboard/loans/verify",
 			icon: CheckCircle,
-			roles: [UserRole.LOAN_OFFICER],
+			roles: [UserRole.ACCOUNTANT],
 		},
 		// {
 		// 	title: "Approve Loans",
@@ -149,10 +157,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/loans/calculator",
 			icon: Calculator,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
@@ -160,10 +168,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/loans/documents",
 			icon: Upload,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
@@ -171,10 +179,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/loans/approval-dashboard",
 			icon: ClipboardList,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
@@ -182,10 +190,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/membership-requests",
 			icon: Users,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
@@ -193,10 +201,10 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/reports",
 			icon: BarChart3,
 			roles: [
-				UserRole.LOAN_OFFICER,
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+				UserRole.ACCOUNTANT,
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
@@ -204,16 +212,17 @@ export function DashboardShell({ children }: DashboardShellProps) {
 			href: "/dashboard/analytics",
 			icon: PieChart,
 			roles: [
-				UserRole.BRANCH_MANAGER,
-				UserRole.REGIONAL_MANAGER,
-				UserRole.FINANCE_ADMIN,
+			
+				UserRole.MANAGER,
+				UserRole.SUPERVISOR,
+				UserRole.COMMITTEE,
 			],
 		},
 		{
 			title: "Settings",
 			href: "/dashboard/settings",
 			icon: Settings,
-			roles: [UserRole.FINANCE_ADMIN],
+			roles: [UserRole.COMMITTEE],
 		},
 	];
 
@@ -292,13 +301,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
 						<div className="mb-2 flex items-center gap-2">
 							<div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
 								<span className="text-lg font-medium text-blue-700">
-									{user?.name.charAt(0)}
+									{user["user"]?.name.charAt(0)}
 								</span>
 							</div>
 							<div>
 								<p className="text-sm font-medium">{user?.name}</p>
 								<p className="text-xs text-gray-500">
-									{user?.role.replace("_", " ")}
+									{user["user"]?.role.replace("_", " ")}
 								</p>
 							</div>
 						</div>

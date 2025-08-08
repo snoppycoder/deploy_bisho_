@@ -31,9 +31,11 @@ export default function LoginPage() {
 		e.preventDefault();
 		setError("");
 
-		const success = await login(identifier, password);
-		if (success) {
-			router.push("/dashboard");
+		const result = await login(identifier, password);
+
+		
+		if (result.success) {
+			router.push(result.redirectUrl as string)
 		} else {
 			setError("Invalid credentials");
 		}

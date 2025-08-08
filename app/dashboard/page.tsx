@@ -158,7 +158,7 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get(`/dashboard/dashboard-get?t=${new Date().getTime()}`, {
+      const response = await api.get(`/dashboard?t=${new Date().getTime()}`, {
         headers: {
           "Cache-Control": "no-cache, no-store, must-revalidate",
           Pragma: "no-cache",
@@ -179,7 +179,7 @@ export default function DashboardPage() {
 
     setIsRefreshing(true);
     try {
-      const response = await api.get(`/dashboard/dashboard-get?t=${new Date().getTime()}`, {
+      const response = await api.get(`/dashboard?t=${new Date().getTime()}`, {
         headers: {
           "Cache-Control": "no-cache, no-store, must-revalidate",
           Pragma: "no-cache",

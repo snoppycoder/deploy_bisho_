@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://bisho-backend-2.onrender.com/api",
+  baseURL: "https://bisho-backend-1.onrender.com/api",
   withCredentials: true, 
   headers: { "Content-Type": "application/json" },
 });
@@ -54,9 +54,14 @@ export const authAPI = {
   },
 
   logout: async () => {
-    const response = await api.get("/auth/logout");
+    const response = await api.post("/auth/logout");
     return response.data;
   },
+  session : async () => {
+    const response = await api.get("/auth/session");
+    return response.data;
+
+  }
 };
 
 export const dashboardAPI = {
@@ -71,6 +76,46 @@ export const membersAPI = {
     const response = await api.get(`/members/${etNumber}`);
     return response.data;
   },
+   getMembers: async () => {
+    const response = await api.get(`/members`);
+    return response.data;
+  },
+ 
+ 
+};
+
+
+export const membersLoanAPI = {
+  apply: async (formData: {
+    amount: number;
+    interestRate: number;
+    tenureMonths: number;
+    purpose: string;
+    coSigner1?: string;
+    coSigner2?: string;
+    agreement: File;
+  }) => {
+    const data = new FormData();
+    data.append("amount", String(formData.amount));
+    data.append("interestRate", String(formData.interestRate));
+    data.append("tenureMonths", String(formData.tenureMonths));
+    data.append("purpose", formData.purpose);
+    if (formData.coSigner1) data.append("coSigner1", formData.coSigner1);
+    if (formData.coSigner2) data.append("coSigner2", formData.coSigner2);
+    data.append("agreement", formData.agreement);
+
+    const response = await api.post(`/loans/apply`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data;
+  },
+   loanEligibilityReq: async () => {
+    const response = await api.get('/members/loan-eligibility')
+    return response.data;
+  }
 };
 
 export default api;

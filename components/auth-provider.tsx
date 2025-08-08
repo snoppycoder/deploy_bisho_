@@ -17,7 +17,7 @@ type User = {
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  login: (identifier: string, password: string) => Promise<{ success: boolean; redirectUrl?: string }>;
+  login: (identifier: string, password: string) => Promise<{ success: boolean; redirectUrl?: string, user ? : User}>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
   etNumber?: any;
@@ -40,20 +40,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = async (identifier: string, password: string): Promise<{ success: boolean; redirectUrl?: string }> => {
+  const login = async (identifier: string, password: string): Promise<{ success: boolean; redirectUrl?: string, user?: User }> => {
     try {
       setLoading(true);
       const { user } = await authAPI.login(identifier, password);
+      console.log(user)
 
-      if (user ) {
+      if (user) {
         localStorage.setItem("user", JSON.stringify(user));
         setUser(user);
         console.log("[AuthProvider] Login success:", user);
 
         const params = new URLSearchParams(window.location.search);
-        const callbackUrl = params.get("callbackUrl") || "/dashboard";
+        const callbackUrl = params.get("callbackUrl") || user.role ?  "/dashboard" : "member";
 
-        return { success: true, redirectUrl: callbackUrl };
+        return { success: true, redirectUrl: callbackUrl, user: user };
       } else {
         console.warn("[AuthProvider] Login failed: no user or token");
         return { success: false };
