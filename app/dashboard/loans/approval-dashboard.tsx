@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@/lib/auth-provider";
+import { useAuth } from "@/components/auth-provider";
 import {
 	Table,
 	TableBody,

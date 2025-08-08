@@ -19,7 +19,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { useAuth } from "@/lib/auth-provider";
+import { useAuth } from "@/components/auth-provider";
 
 interface Loan {
 	id: number;

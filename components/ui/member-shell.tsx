@@ -21,7 +21,7 @@ import {
 	FileCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth-provider";
+import { useAuth } from "@/components/auth-provider";
 import { cn } from "@/lib/utils";
 
 interface MemberShellProps {
