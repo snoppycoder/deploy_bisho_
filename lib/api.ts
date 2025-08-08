@@ -1,8 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "https://bisho-backend-2.onrender.com/api",
-  withCredentials: true, // ⬅️ ensures cookies are sent
+  baseURL: "https://bisho-backend-2.onrender.com/api",
+  withCredentials: true, 
   headers: { "Content-Type": "application/json" },
 });
 
@@ -17,7 +17,6 @@ api.interceptors.request.use(
   }
 );
 
-// If backend does NOT send token in response body or header, no need to handle token here
 api.interceptors.response.use(
   (response) => {
     console.log("[API Response]", response.status, response.config.url);
@@ -51,7 +50,7 @@ api.interceptors.response.use(
 export const authAPI = {
   login: async (identifier: string, password: string) => {
     const response = await api.post("/auth/login", { identifier, password });
-    return { user: response.data }; // assumes user info is in body
+    return { user: response.data }; 
   },
 
   logout: async () => {
