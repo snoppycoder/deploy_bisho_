@@ -4,7 +4,7 @@ import type React from "react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserRole } from "@prisma/client";
+// import { UserRole } from "@prisma/client";
 import {
 	BarChart3,
 	CreditCard,
@@ -42,6 +42,7 @@ type UserType  = {
 export function DashboardShell({ children }: DashboardShellProps) {
 
 	const { user, logout } = useAuth();
+	console.log("[Component] user from AuthContext:", user);
 	
 	const pathname = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
@@ -55,181 +56,126 @@ export function DashboardShell({ children }: DashboardShellProps) {
 	};
 
 	const navItems = [
-		{
-			title: "Dashboard",
-			href: "/dashboard",
-			icon: Home,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Members",
-			href: "/dashboard/members",
-			icon: Users,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Add Member",
-			href: "/dashboard/members/add",
-			icon: UserPlus,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Loans",
-			href: "/dashboard/loans/details",
-			icon: CreditCard,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		// {
-		// 	title: "Manage Loans",
-		// 	href: "/dashboard/loans/manage",
-		// 	icon: CreditCard,
-		// 	roles: [
-		// 		UserRole.LOAN_OFFICER,
-		// 		UserRole.BRANCH_MANAGER,
-		// 		UserRole.REGIONAL_MANAGER,
-		// 		UserRole.FINANCE_ADMIN,
-		// 	],
-		// },
-		// {
-		// 	title: "Loan Details",
-		// 	href: "/dashboard/loans/details",
-		// 	icon: FileSearch,
-		// 	roles: [
-		// 		UserRole.LOAN_OFFICER,
-		// 		UserRole.BRANCH_MANAGER,
-		// 		UserRole.REGIONAL_MANAGER,
-		// 		UserRole.FINANCE_ADMIN,
-		// 	],
-		// },
-		{
-			title: "Disburse Loans",
-			href: "/dashboard/loans/disburse",
-			icon: DollarSign,
-			roles: [UserRole.COMMITTEE],
-		},
+  {
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: Home,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Members",
+    href: "/dashboard/members",
+    icon: Users,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Add Member",
+    href: "/dashboard/members/add",
+    icon: UserPlus,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Loans",
+    href: "/dashboard/loans/details",
+    icon: CreditCard,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  // {
+  //   title: "Manage Loans",
+  //   href: "/dashboard/loans/manage",
+  //   icon: CreditCard,
+  //   roles: [
+  //     "LOAN_OFFICER",
+  //     "BRANCH_MANAGER",
+  //     "REGIONAL_MANAGER",
+  //     "FINANCE_ADMIN",
+  //   ],
+  // },
+  // {
+  //   title: "Loan Details",
+  //   href: "/dashboard/loans/details",
+  //   icon: FileSearch,
+  //   roles: [
+  //     "LOAN_OFFICER",
+  //     "BRANCH_MANAGER",
+  //     "REGIONAL_MANAGER",
+  //     "FINANCE_ADMIN",
+  //   ],
+  // },
+  {
+    title: "Disburse Loans",
+    href: "/dashboard/loans/disburse",
+    icon: DollarSign,
+    roles: ["COMMITTEE"],
+  },
+  {
+    title: "Approval History",
+    href: "/dashboard/loans/approval-history",
+    icon: History,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Verify Loans",
+    href: "/dashboard/loans/verify",
+    icon: CheckCircle,
+    roles: ["ACCOUNTANT"],
+  },
+  // {
+  //   title: "Approve Loans",
+  //   href: "/dashboard/loans/approve",
+  //   icon: FileText,
+  //   roles: ["BRANCH_MANAGER", "REGIONAL_MANAGER"],
+  // },
+  {
+    title: "Loan Calculator",
+    href: "/dashboard/loans/calculator",
+    icon: Calculator,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Loan Documents",
+    href: "/dashboard/loans/documents",
+    icon: Upload,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Loan Approval Dashboard",
+    href: "/dashboard/loans/approval-dashboard",
+    icon: ClipboardList,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Membership Requests",
+    href: "/dashboard/membership-requests",
+    icon: Users,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Reports",
+    href: "/dashboard/reports",
+    icon: BarChart3,
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Analytics",
+    href: "/dashboard/analytics",
+    icon: PieChart,
+    roles: ["MANAGER", "SUPERVISOR", "COMMITTEE"],
+  },
+  {
+    title: "Settings",
+    href: "/dashboard/settings",
+    icon: Settings,
+    roles: ["COMMITTEE"],
+  },
+];
 
-		{
-			title: "Approval History",
-			href: "/dashboard/loans/approval-history",
-			icon: History,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Verify Loans",
-			href: "/dashboard/loans/verify",
-			icon: CheckCircle,
-			roles: [UserRole.ACCOUNTANT],
-		},
-		// {
-		// 	title: "Approve Loans",
-		// 	href: "/dashboard/loans/approve",
-		// 	icon: FileText,
-		// 	roles: [UserRole.BRANCH_MANAGER, UserRole.REGIONAL_MANAGER],
-		// },
-
-		{
-			title: "Loan Calculator",
-			href: "/dashboard/loans/calculator",
-			icon: Calculator,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Loan Documents",
-			href: "/dashboard/loans/documents",
-			icon: Upload,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Loan Approval Dashboard",
-			href: "/dashboard/loans/approval-dashboard",
-			icon: ClipboardList,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Membership Requests",
-			href: "/dashboard/membership-requests",
-			icon: Users,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Reports",
-			href: "/dashboard/reports",
-			icon: BarChart3,
-			roles: [
-				UserRole.ACCOUNTANT,
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Analytics",
-			href: "/dashboard/analytics",
-			icon: PieChart,
-			roles: [
-			
-				UserRole.MANAGER,
-				UserRole.SUPERVISOR,
-				UserRole.COMMITTEE,
-			],
-		},
-		{
-			title: "Settings",
-			href: "/dashboard/settings",
-			icon: Settings,
-			roles: [UserRole.COMMITTEE],
-		},
-	];
+    console.log("User role:", user?.role);
 
 	const filteredNavItems = navItems.filter(
-		(item) => user && item.roles.includes(user.role as UserRole | any)
+		(item) => user && item.roles.includes(user.role )
 	);
-
+     console.log("Filtered nav items:", filteredNavItems);
 	useEffect(() => {
 		const handleResize = () => {
 			if (window.innerWidth >= 768) {
@@ -281,6 +227,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 					<div className="flex-1 overflow-y-auto py-2">
 						<nav className="grid gap-1 px-2">
 							{filteredNavItems.map((item, index) => (
+								console.log("[DashboardShell] Rendering nav item:", user),
 								<Link
 									key={index}
 									href={item.href}
@@ -301,13 +248,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
 						<div className="mb-2 flex items-center gap-2">
 							<div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
 								<span className="text-lg font-medium text-blue-700">
-									{ user["user"] ? user["user"]?.name.charAt(0) : ""}
+									{ user?.name.charAt(0)}
 								</span>
 							</div>
 							<div>
 								<p className="text-sm font-medium">{user?.name}</p>
 								<p className="text-xs text-gray-500">
-									{user["user"]?.role.replace("_", " ")}
+									{user?.role.replace("_", " ")}
 								</p>
 							</div>
 						</div>

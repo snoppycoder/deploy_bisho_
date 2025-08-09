@@ -26,13 +26,21 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => {
+  if (typeof window !== "undefined") {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  }
+  return null;
+});
+
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   // Load user from localStorage if token exists
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+    // console.log("[Component] user from AuthContext(UseEffect):", user);
     
     if (storedUser) {
       setUser(JSON.parse(storedUser));
@@ -41,18 +49,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (identifier: string, password: string): Promise<{ success: boolean; redirectUrl?: string, user?: User }> => {
+    // console.log("[AuthProvider] login() called with:", identifier);
     try {
       setLoading(true);
       const { user } = await authAPI.login(identifier, password);
+      // console.log("[AuthProvider] login() response user:", user);
       console.log(user)
 
       if (user) {
         localStorage.setItem("user", JSON.stringify(user));
         setUser(user);
-        console.log("[AuthProvider] Login success:", user);
+        // console.log("[AuthProvider] User set:", user);
+       
 
         const params = new URLSearchParams(window.location.search);
-        const callbackUrl = params.get("callbackUrl") || user.role ?  "/dashboard" : "member";
+        const callbackUrl = params.get("callbackUrl") || (user.role === "MEMBER" ? "/member" : "/dashboard");
 
         return { success: true, redirectUrl: callbackUrl, user: user };
       } else {
@@ -102,5 +113,6 @@ export function useAuth() {
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
+  
   return context;
 }

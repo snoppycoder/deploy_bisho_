@@ -131,7 +131,7 @@ export default function MemberDashboardPage() {
 
 	const fetchMemberData = async () => {
 		
-		if (!user?.user.etNumber) return;
+		if (!user?.etNumber) return;
 
 		try {
 			// Add timestamp to prevent caching
@@ -153,7 +153,7 @@ export default function MemberDashboardPage() {
 			// }
 
 			// const data = await response.json();
-			const data = await membersAPI.getMember(user["user"].etNumber)
+			const data = await membersAPI.getMember(user?.etNumber)
 			setMemberData(data.member);
 			setError(null);
 		} catch (err) {
