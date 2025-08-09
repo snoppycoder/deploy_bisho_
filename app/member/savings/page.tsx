@@ -54,6 +54,7 @@ import {
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { membersSavingsAPI } from "@/lib/api"
 
 interface Transaction {
 	id: number;
@@ -113,16 +114,12 @@ export default function SavingsAndTransactionsPage() {
 		if (!user?.etNumber) return;
 
 		setIsLoading(true);
-		try {
-			const response = await fetch(
-				`/api/members/${user.etNumber}/savings-and-transactions?period=${period}&type=${type}`
-			);
-
-			if (!response.ok) {
-				throw new Error("Failed to fetch savings and transactions");
-			}
-
-			const data = await response.json();
+		try { 
+			 const data = await membersSavingsAPI.getSavingsAndTransactions(
+				user.etNumber,
+				period,
+				type
+				);
 
 			setSavings(data.totalSavings);
 			setTotalDeposits(data.totalDeposits);

@@ -105,6 +105,11 @@ export function MemberShell({ children }: MemberShellProps) {
 			icon: Settings,
 		},
 	];
+	if(!user){
+		return (
+			<div>please log in first </div>
+		)	
+	}
 
 	return (
 		<div className="flex min-h-screen flex-col bg-gray-100">
@@ -166,11 +171,11 @@ export function MemberShell({ children }: MemberShellProps) {
 						<div className="mb-2 flex items-center gap-2">
 							<div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
 								<span className="text-sm font-medium text-blue-700">
-									{user.user?.name.charAt(0)}
+									{user?.name.charAt(0)}
 								</span>
 							</div>
 							<div>
-								<p className="text-sm font-medium">{user.user?.name}</p>
+								<p className="text-sm font-medium">{user?.name}</p>
 								<p className="text-xs text-gray-500">Member</p>
 							</div>
 						</div>

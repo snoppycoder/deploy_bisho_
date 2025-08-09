@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { membersAPI } from "@/lib/api"
 
 export default function KYCDocumentsPage() {
 	const [file, setFile] = useState<File | null>(null);
@@ -42,15 +43,7 @@ export default function KYCDocumentsPage() {
 		formData.append("documentType", documentType);
 
 		try {
-			const response = await fetch("/api/member/kyc-upload", {
-				method: "POST",
-				body: formData,
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to upload document");
-			}
-
+			const response = await membersAPI.uploadKYC(formData);
 			toast({
 				title: "Success",
 				description: "Document uploaded successfully.",

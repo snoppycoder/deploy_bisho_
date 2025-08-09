@@ -24,7 +24,8 @@ import {
 } from "@/components/ui/select";
 import { FileText, Info, Calculator } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { membersAPI, membersLoanAPI } from "@/lib/api";
+import { membersAPI, membersLoanAPI , loanAgreement} from "@/lib/api";
+
 
 interface Member {
 	id: number;
@@ -235,7 +236,7 @@ export default function LoanApplicationPage() {
 
 	const handleDownloadAgreement = async () => {
 		try {
-			const response = await fetch("/api/loans/agreement-template");
+			const response = await loanAgreement.getLoanAgreement();
 			if (response.ok) {
 				const blob = await response.blob();
 				const url = window.URL.createObjectURL(blob);

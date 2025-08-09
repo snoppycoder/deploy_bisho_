@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-
+import { loanDocument } from "@/lib/api"
 interface LoanDocument {
 	id: number;
 	loanId: number;
@@ -31,7 +31,7 @@ export default function MemberLoanDocumentsPage() {
 
 	const fetchDocuments = async () => {
 		try {
-			const response = await fetch("/api/members/loans/documents");
+			const response = await loanDocument.getLoanDocument();
 			if (response.ok) {
 				const data = await response.json();
 				setDocuments(data);
@@ -49,7 +49,7 @@ export default function MemberLoanDocumentsPage() {
 
 	const handleDownload = async (documentId: number) => {
 		try {
-			const response = await fetch(`/api/member/loans/documents/${documentId}`);
+			const response = await loanDocument.getLoanDocumentById(documentId);
 			if (response.ok) {
 				const blob = await response.blob();
 				const url = window.URL.createObjectURL(blob);

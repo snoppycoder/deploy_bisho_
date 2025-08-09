@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { PiggyBank, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { membersAPI } from "@/lib/api";
 
 interface WillingDepositRequest {
 	id: string;
@@ -35,9 +36,7 @@ export default function WillingDepositHistoryPage() {
 	useEffect(() => {
 		const fetchRequests = async () => {
 			try {
-				const response = await fetch(
-					`/api/willing-deposit/requests?memberId=${user?.id}`
-				);
+				const response = await membersAPI.getWillingDeposits(user?.id);
 				if (response.ok) {
 					const data = await response.json();
 					setRequests(data);

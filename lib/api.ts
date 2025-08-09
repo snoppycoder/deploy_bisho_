@@ -81,10 +81,35 @@ export const membersAPI = {
     const response = await api.get(`/members`);
     return response.data;
   },
- 
- 
-};
+ uploadKYC: async (formData: FormData) => {
+  const response = await api.post("/member/kyc-upload", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return response.data;
+},
 
+getWillingDeposits: async (
+  userId: number | undefined
+) => {
+  const response = await api.get(`/willing-deposit/requests?memberId=${userId}`);
+  return response.data;
+},
+
+willingDepositRequest: async (
+  data: {
+    amount: number;
+    reason: string;
+    paymentMethod: string;
+    memberId: number | undefined;
+  }
+)=> {
+  const response = await api.post('/willing-deposit/request', data);
+  return response.data;
+}
+
+};
 
 export const membersLoanAPI = {
   apply: async (formData: {
@@ -116,7 +141,93 @@ export const membersLoanAPI = {
    loanEligibilityReq: async () => {
     const response = await api.get('/members/loan-eligibility')
     return response.data;
+  },
+
+  getLoans: async () => {
+    const response = await api.get('/members/loans');
+    return response.data;
+  }, 
+
+  getLoansById: async(
+    Id: string[] | string
+  ) => {
+    const response = await api.get(`/api/members/loans/${Id}`);
+    return response.data;
+  },
+
+  calculateLoan: async (data: {
+  loanAmount: number;
+  interestRate: number;
+  loanTerm: number;
+  repaymentFrequency: "monthly" | "quarterly" | "annually";
+}) => {
+  const response = await api.post("/members/loans/calculate", data);
+  return response.data;
+},
+
+payLoanRepayment: async (
+  loanId: string | string[],
+  repaymentId: string | number,
+  data: {
+    amount: number;
+    reference?: string;
+    sourceType: string;
   }
+) => {
+  const response = await api.post(
+    `/members/loans/${loanId}/repayments/${repaymentId}/pay`,
+    data
+  );
+  return response.data;
+}
 };
+
+export const membersSavingsAPI = {
+    getSavingsAndTransactions: async (
+      etNumber: string,
+      period: string,
+      type: string
+    ) => {
+      const response = await api.get(
+        `/members/${etNumber}/savings-and-transactions`,
+        { params: { period, type } } // axios handles query strings automatically
+      );
+      return response.data;
+    },
+};
+
+export const loanCalculator = {
+  getCalculated: async() => {
+       
+  }
+}
+
+export const loanAgreement = {
+  getLoanAgreement: async()=>{
+    const response = await api.get('/loans/agreement-template');
+    return response.data;
+  }
+}
+
+export const loanDocument = {
+  getLoanDocumentById: async(
+    documentId: number
+  )=>{
+    const response = await api.get(`/member/loans/documents/${documentId}`);
+    return response.data;
+  },
+
+  getLoanDocumentByUrl: async(
+    URL: string
+  )=>{
+    const response = await api.get(`/members/documents/view?url=${encodeURIComponent(URL)}`);
+    return response.data;
+  },
+
+  getLoanDocument: async()=>{
+    const response = await api.get('/members/loans/documents');
+    return response.data;
+  }
+}
 
 export default api;

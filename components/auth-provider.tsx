@@ -45,6 +45,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     // console.log("[Component] user from AuthContext(UseEffect):", user);
+    if(!user){
+      router.push('/login')
+    }
     
     if (storedUser) {
       setUser(JSON.parse(storedUser));

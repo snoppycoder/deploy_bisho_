@@ -187,6 +187,11 @@ export function DashboardShell({ children }: DashboardShellProps) {
 		return () => window.removeEventListener("resize", handleResize);
 	}, []);
 
+	if(!user){
+		return (
+			<div>please log in first </div>
+		)	
+	}
 	return (
 		<div className="flex min-h-screen flex-col bg-gray-100">
 			{/* Mobile Header */}
@@ -248,13 +253,13 @@ export function DashboardShell({ children }: DashboardShellProps) {
 						<div className="mb-2 flex items-center gap-2">
 							<div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
 								<span className="text-lg font-medium text-blue-700">
-									{ user?.name.charAt(0)}
+									{user?.name ? user.name.charAt(0) : ""}
 								</span>
 							</div>
 							<div>
 								<p className="text-sm font-medium">{user?.name}</p>
 								<p className="text-xs text-gray-500">
-									{user?.role.replace("_", " ")}
+									{user?.role ? user?.role.replace("_", " ") : " "}
 								</p>
 							</div>
 						</div>

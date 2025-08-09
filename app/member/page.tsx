@@ -276,6 +276,12 @@ export default function MemberDashboardPage() {
 		"#14b8a6", // teal-500
 	];
 
+	if(!user){
+		return (
+			<div>please log in first </div>
+		)	
+	}
+
 	if (isLoading) {
 		return (
 			<div className="flex flex-col gap-5 animate-pulse">

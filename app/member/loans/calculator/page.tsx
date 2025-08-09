@@ -38,6 +38,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
+import { membersLoanAPI } from "@/lib/api";
 
 const formSchema = z.object({
 	loanAmount: z.string().min(1, "Loan amount is required").transform(Number),
@@ -79,19 +80,8 @@ export default function MemberLoanCalculatorPage() {
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		try {
-			const response = await fetch("/api/members/loans/calculate", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(values),
-			});
-
-			if (!response.ok) {
-				throw new Error("Failed to calculate loan");
-			}
-
-			const result = await response.json();
+			
+			const result = await membersLoanAPI.calculateLoan(values)
 			setCalculationResult(result);
 		} catch (error) {
 			console.error("Error calculating loan:", error);

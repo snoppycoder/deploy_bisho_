@@ -33,6 +33,7 @@ import {
 	AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { membersLoanAPI } from "@/lib/api"; 
 
 interface Loan {
 	id: number;
@@ -57,7 +58,7 @@ interface Loan {
 		sourceType: string;
 		status: string;
 	}[];
-	totalRepaidAmount: number; // Added totalRepaidAmount field
+	totalRepaidAmount: number; 
 }
 interface LoanRepayment {
 	id: number;
@@ -65,7 +66,7 @@ interface LoanRepayment {
 	repaymentDate: string;
 	reference: string | null;
 	sourceType: string;
-	status: string; // Added status field
+	status: string;
 }
 
 export default function MemberLoansPage() {
@@ -78,11 +79,7 @@ export default function MemberLoansPage() {
 	useEffect(() => {
 		const fetchLoans = async () => {
 			try {
-				const response = await fetch("/api/members/loans");
-				if (!response.ok) {
-					throw new Error("Failed to fetch loans");
-				}
-				const data = await response.json();
+				const data = await membersLoanAPI.getLoans()
 				setLoans(data);
 			} catch (error) {
 				console.error("Error fetching loans:", error);

@@ -61,6 +61,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { membersLoanAPI, loanDocument } from "@/lib/api";
 
 interface Loan {
 	id: number;
@@ -128,7 +129,7 @@ export default function LoanDetailPage() {
 		const fetchLoanDetails = async () => {
 			try {
 				setIsLoading(true);
-				const response = await fetch(`/api/members/loans/${params.id}`);
+				const response = await membersLoanAPI.getLoansById(params.id);
 				if (!response.ok) {
 					throw new Error("Failed to fetch loan details");
 				}
@@ -339,9 +340,7 @@ export default function LoanDetailPage() {
 			const fullUrl = documentUrl.startsWith("http")
 				? documentUrl
 				: `/${documentUrl}`;
-			const response = await fetch(
-				`/api/members/documents/view?url=${encodeURIComponent(fullUrl)}`
-			);
+			const response = await loanDocument.getLoanDocumentByUrl(fullUrl);
 			if (response.ok) {
 				const blob = await response.blob();
 				const url = URL.createObjectURL(blob);
@@ -365,9 +364,7 @@ export default function LoanDetailPage() {
 			const fullUrl = documentUrl.startsWith("http")
 				? documentUrl
 				: `/${documentUrl}`;
-			const response = await fetch(
-				`/api/members/documents/view?url=${encodeURIComponent(fullUrl)}`
-			);
+			const response = await loanDocument.getLoanDocumentByUrl(fullUrl);
 			if (response.ok) {
 				const blob = await response.blob();
 				const url = URL.createObjectURL(blob);
@@ -405,18 +402,13 @@ export default function LoanDetailPage() {
 	const handlePaymentSubmit = async () => {
 		setIsSubmittingPayment(true);
 		try {
-			const response = await fetch(
-				`/api/members/loans/${params.id}/repayments/${paymentFormData.repaymentId}/pay`,
+			const response = await membersLoanAPI.payLoanRepayment(
+				params.id,
+				paymentFormData.repaymentId,
 				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						amount: paymentFormData.amount,
-						reference: paymentFormData.reference,
-						sourceType: paymentFormData.sourceType,
-					}),
+				amount: paymentFormData.amount,
+				reference: paymentFormData.reference,
+				sourceType: paymentFormData.sourceType,
 				}
 			);
 
@@ -432,7 +424,7 @@ export default function LoanDetailPage() {
 				setIsPaymentDialogOpen(false);
 
 				// Refresh loan details
-				const loanResponse = await fetch(`/api/members/loans/${params.id}`);
+				const loanResponse = await membersLoanAPI.getLoansById(params.id);
 				if (loanResponse.ok) {
 					const loanData = await loanResponse.json();
 					setLoan(loanData);

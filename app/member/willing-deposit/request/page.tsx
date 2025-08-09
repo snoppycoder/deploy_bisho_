@@ -26,6 +26,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Loader2, PiggyBank, ArrowRight, CheckCircle } from "lucide-react";
+import { membersAPI } from "@/lib/api";
 
 export default function WillingDepositRequestPage() {
 	const [amount, setAmount] = useState("");
@@ -42,16 +43,12 @@ export default function WillingDepositRequestPage() {
 		setIsSubmitting(true);
 
 		try {
-			const response = await fetch("/api/willing-deposit/request", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					amount: Number.parseFloat(amount),
-					reason,
-					paymentMethod,
-					memberId: user?.id,
-				}),
-			});
+			const response = await membersAPI.willingDepositRequest({
+				amount: Number.parseFloat(amount),
+				reason,
+				paymentMethod,
+				memberId: user?.id,
+			})
 
 			if (response.ok) {
 				setIsSuccess(true);
