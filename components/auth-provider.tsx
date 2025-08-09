@@ -1,9 +1,13 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import type { UserRole } from "@prisma/client";
+// import type { UserRole } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import {authAPI} from "@/lib/api";
+
+// dashboard-shell.tsx (client component)
+type UserRole = "ACCOUNTANT" | "MANAGER" | "SUPERVISOR" | "COMMITTEE"; // define your own enum or string union here
+
 
 type User = {
   id: number;
