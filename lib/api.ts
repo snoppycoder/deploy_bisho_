@@ -81,6 +81,7 @@ export const membersAPI = {
     const response = await api.get(`/members`);
     return response.data;
   },
+  // this needs to be checked
  uploadKYC: async (formData: FormData) => {
   const response = await api.post("/member/kyc-upload", formData, {
     headers: {
