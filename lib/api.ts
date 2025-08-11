@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: "https://bisho-backend-1.onrender.com/api",
-  withCredentials: true, 
+    withCredentials: true, 
   headers: { "Content-Type": "application/json" },
 });
 
@@ -197,7 +197,9 @@ export const membersSavingsAPI = {
 };
 
 export const loanCalculator = {
-  getCalculated: async() => {
+  getCalculated: async( loanAmount:number, interestRate:number, loanTerm:number, repaymentFrequency: "monthly" | "quarterly" | "annually") => {
+    const result = await api.post('loans/calculate', {loanAmount, interestRate, loanTerm, repaymentFrequency});
+    return result.data;
        
   }
 }

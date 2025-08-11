@@ -45,6 +45,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { membersAPI } from "@/lib/api";
 
+
 interface MemberData {
 	name: string;
 	totalSavings: number;
@@ -1317,5 +1318,6 @@ export default function MemberDashboardPage() {
 				}
 			`}</style>
 		</motion.div>
-	);
+
+			);
 }
