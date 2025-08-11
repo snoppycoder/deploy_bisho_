@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Search, ChevronDown, ChevronUp } from "lucide-react";
+import { loanAPI } from "@/lib/api";
 
 interface Loan {
 	id: number;
@@ -60,9 +61,8 @@ export default function LoanDetailsPage() {
 
 	const fetchLoans = async () => {
 		try {
-			const response = await fetch("/api/loans");
-			if (response.ok) {
-				const data = await response.json();
+			const data = await loanAPI.getLoan()
+			if (data) {
 				setLoans(data);
 			} else {
 				throw new Error("Failed to fetch loans");

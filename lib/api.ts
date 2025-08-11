@@ -196,6 +196,13 @@ export const membersSavingsAPI = {
       return response.data;
     },
 };
+export const loanAPI = {
+  getLoan : async() => {
+    const response = await api.get('/loans');
+    return response.data
+  }
+}
+
 
 export const loanCalculator = {
   getCalculated: async( loanAmount:number, interestRate:number, loanTerm:number, repaymentFrequency: "monthly" | "quarterly" | "annually") => {

@@ -69,11 +69,11 @@ export function MemberShell({ children }: MemberShellProps) {
 			href: "/member/loans/calculator",
 			icon: Calculator,
 		},
-		{
-			title: "KYC Documents",
-			href: "/member/kyc",
-			icon: Upload,
-		},
+		// {
+		// 	title: "KYC Documents",
+		// 	href: "/member/kyc",
+		// 	icon: Upload,
+		// },
 		// {
 		// 	title: "Membership Requests",
 		// 	href: "/member/membership",
@@ -84,26 +84,26 @@ export function MemberShell({ children }: MemberShellProps) {
 		// 	href: "/member/willing-deposit/request",
 		// 	icon: PiggyBank,
 		// },
-		{
-			title: "Willing Deposit History",
-			href: "/member/willing-deposit/history",
-			icon: FileCheck,
-		},
-		{
-			title: "Reports",
-			href: "/member/reports",
-			icon: BarChart3,
-		},
-		{
-			title: "My Profile",
-			href: "/member/profile",
-			icon: User,
-		},
-		{
-			title: "Settings",
-			href: "/member/settings",
-			icon: Settings,
-		},
+		// {
+		// 	title: "Willing Deposit History",
+		// 	href: "/member/willing-deposit/history",
+		// 	icon: FileCheck,
+		// },
+		// {
+		// 	title: "Reports",
+		// 	href: "/member/reports",
+		// 	icon: BarChart3,
+		// },
+		// {
+		// 	title: "My Profile",
+		// 	href: "/member/profile",
+		// 	icon: User,
+		// },
+		// {
+		// 	title: "Settings",
+		// 	href: "/member/settings",
+		// 	icon: Settings,
+		// },
 	];
 	if(!user){
 		return (
