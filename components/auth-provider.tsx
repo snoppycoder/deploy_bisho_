@@ -43,17 +43,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Load user from localStorage if token exists
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    // console.log("[Component] user from AuthContext(UseEffect):", user);
-    if(!user){
-      router.push('/login')
-    }
-    
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) {
+    setUser(JSON.parse(storedUser));
     setLoading(false);
-  }, []);
+  } else {
+    setLoading(false);
+    router.push('/login');
+  }
+}, []);
+
 
   const login = async (identifier: string, password: string): Promise<{ success: boolean; redirectUrl?: string, user?: User }> => {
     // console.log("[AuthProvider] login() called with:", identifier);
