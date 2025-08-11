@@ -46,7 +46,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const storedUser = localStorage.getItem("user");
     // console.log("[Component] user from AuthContext(UseEffect):", user);
     if(!user){
-      router.push('/')
+      // router.push('/')
+      return;
     }
     
     if (storedUser) {
