@@ -30,28 +30,37 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-  if (typeof window !== "undefined") {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  }
-  return null;
-});
+  const [hydrated, setHydrated] = useState(false);
+   const [user, setUser] = useState<User | null>(null);
+   useEffect(() => {
+     setHydrated(true)
+
+   }, [])
+
+//   const [user, setUser] = useState<User | null>(() => {
+//   if (typeof window !== "undefined") {
+//     const storedUser = localStorage.getItem("user");
+//     return storedUser ? JSON.parse(storedUser) : null;
+//   }
+//   return null;
+// });
 
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   // Load user from localStorage if token exists
   useEffect(() => {
-  const storedUser = localStorage.getItem("user");
-  if (storedUser) {
-    setUser(JSON.parse(storedUser));
-    setLoading(false);
-  } else {
-    setLoading(false);
-    router.push('/login');
-  }
-}, []);
+    if (hydrated) {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        router.push("/login");
+      }
+      setLoading(false);
+    }
+  }, [hydrated, router]);
+
 
 
   const login = async (identifier: string, password: string): Promise<{ success: boolean; redirectUrl?: string, user?: User }> => {
