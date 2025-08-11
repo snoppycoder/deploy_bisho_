@@ -47,6 +47,8 @@ import {
 	RefreshCw,
 	User,
 } from "lucide-react";
+import { loadBindings } from "next/dist/build/swc";
+import { loanAPI } from "@/lib/api";
 
 interface LoanDetail {
 	id: number;
@@ -133,9 +135,9 @@ export default function IndividualLoanDetailPage() {
 	const fetchLoanDetail = async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch(`/api/loans/${params.id}`);
-			if (response.ok) {
-				const data = await response.json();
+			console.log(" here is the param " + params.id)
+			const data = await loanAPI.getLoanById(params.id[0]);
+			if (data) {
 				setLoanDetail(data);
 			} else {
 				throw new Error("Failed to fetch loan detail");
@@ -167,7 +169,7 @@ export default function IndividualLoanDetailPage() {
 				toast({
 					title: "Loan status updated successfully",
 					description:
-						user?.role === "FINANCE_ADMIN" && newStatus === "APPROVED"
+						user?.role === "COMMITTEE" && newStatus === "APPROVED"
 							? "The loan has been approved and disbursed."
 							: `The loan status has been updated to ${newStatus}.`,
 				});

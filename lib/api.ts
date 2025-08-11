@@ -200,6 +200,11 @@ export const loanAPI = {
   getLoan : async() => {
     const response = await api.get('/loans');
     return response.data
+  },
+  getLoanById: async(id : string) => {
+    const response = await api.get('/loans', {params: {id}});
+    return response.data;
+
   }
 }
 
