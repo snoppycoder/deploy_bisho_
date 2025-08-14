@@ -1,4 +1,13 @@
 import axios from "axios";
+export interface LoanApprovalHistoryQuery {
+  search?: string;
+  status?: "ALL" | "PENDING" | "APPROVED" | "REJECTED";
+  fromDate?: string; 
+  toDate?: string;   
+  page?: number;
+  pageSize?: number;
+}
+// i will create a model.ts
 
 const api = axios.create({
   baseURL: "https://bisho-backend-1.onrender.com/api",
@@ -75,6 +84,12 @@ export const dashboardAPI = {
 export const membersAPI = {
   getMember: async (etNumber: string) => {
     const response = await api.get(`/members/${etNumber}`);
+    return response.data;
+  },
+  getMembersByDate: async (effectiveDate: Date) => {
+    const response = await api.get("/members", {
+      params: { effectiveDate: effectiveDate.toISOString() },
+    });
     return response.data;
   },
    getMembers: async () => {
@@ -205,7 +220,13 @@ export const loanAPI = {
     const response = await api.get('/loans', {params: {id}});
     return response.data;
 
-  }
+  },
+ getLoanApprovalHistory: async (query: LoanApprovalHistoryQuery = {}) => {
+  const response = await api.get('/loans/approval-history', {
+    params: query
+  });
+  return response.data;
+}
 }
 
 

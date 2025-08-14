@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
 import { addDays } from "date-fns";
+import { loanAPI } from "@/lib/api";
 
 interface ApprovalLog {
 	id: number;
@@ -58,10 +59,12 @@ export default function ApprovalHistoryPage() {
 				page: "1",
 				pageSize: "50", // Adjust as needed
 			});
-			const response = await fetch(`/api/loans/approval-history?${params}`);
-			if (response.ok) {
-				const data = await response.json();
-				setApprovalLogs(data.logs);
+			const response = await loanAPI.getLoanApprovalHistory();
+			if (response) {
+				
+
+				
+				setApprovalLogs(response.logs);
 			} else {
 				throw new Error("Failed to fetch approval history");
 			}

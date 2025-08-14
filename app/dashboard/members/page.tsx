@@ -45,6 +45,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { DatePicker } from "@/components/ui/date_picker";
 import { Badge } from "@/components/ui/badge";
+import { membersAPI } from "@/lib/api";
 
 interface Member {
 	id: number;
@@ -80,14 +81,15 @@ export default function MembersListPage() {
 
 	const fetchMembers = useCallback(async () => {
 		try {
-			const url = new URL("/api/members", window.location.origin);
-			url.searchParams.append("effectiveDate", effectiveDate.toISOString());
-			const response = await fetch(url.toString());
-			if (!response.ok) {
+			// const url = new URL("/api/members", window.location.origin);
+			// url.searchParams.append("effectiveDate", effectiveDate.toISOString());
+			// const response = await fetch(url.toString());
+			const response = await membersAPI.getMembersByDate(effectiveDate);
+			if (!response) {
 				throw new Error("Failed to fetch members");
 			}
-			const data = await response.json();
-			setMembers(data);
+			// const data = await response.json();
+			setMembers(response);
 		} catch (error) {
 			console.error("Error fetching members:", error);
 			toast({

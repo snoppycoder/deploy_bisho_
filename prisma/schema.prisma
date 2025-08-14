@@ -41,7 +41,7 @@ model MemberHistory {
   memberId      Int
   changeDate    DateTime @default(now())
   effectiveDate DateTime
-  fieldName     String
+  fieldName     Strianng
   oldValue      String?
   newValue      String?
   member        Member   @relation(fields: [memberId], references: [id])

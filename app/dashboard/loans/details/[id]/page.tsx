@@ -135,10 +135,10 @@ export default function IndividualLoanDetailPage() {
 	const fetchLoanDetail = async () => {
 		setIsLoading(true);
 		try {
-			console.log(" here is the param " + params.id)
 			const data = await loanAPI.getLoanById(params.id[0]);
-			if (data) {
-				setLoanDetail(data);
+			if (data && data.length > 0) {
+				
+				setLoanDetail(data[0]);
 			} else {
 				throw new Error("Failed to fetch loan detail");
 			}
@@ -343,6 +343,9 @@ export default function IndividualLoanDetailPage() {
 		// 	(sum, repayment) => sum + Number(repayment.paidAmount),
 		// 	0
 		// );
+		
+		console.log(loanDetail)
+
 
 		const totalPaid = loanDetail.loanRepayments.reduce((sum, repayment) => {
 			if (repayment.paidAmount !== undefined) {
