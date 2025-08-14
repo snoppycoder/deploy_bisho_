@@ -48,7 +48,7 @@ import {
 	User,
 } from "lucide-react";
 import { loadBindings } from "next/dist/build/swc";
-import { loanAPI } from "@/lib/api";
+import { loanAPI, loanDocument } from "@/lib/api";
 
 interface LoanDetail {
 	id: number;
@@ -193,13 +193,14 @@ export default function IndividualLoanDetailPage() {
 		setDocumentError(null);
 		try {
 			// Use the full path for local files
-			const fullUrl = documentUrl.startsWith("http")
-				? documentUrl
-				: `/${documentUrl}`;
-			const response = await fetch(
-				`/api/loans/documents/view?url=${encodeURIComponent(fullUrl)}`
-			);
-			if (response.ok) {
+			// const fullUrl = documentUrl.startsWith("http")
+			// 	? documentUrl
+			// 	: `/${documentUrl}`;
+			// const response = await fetch(
+			// 	`/api/loans/documents/view?url=${encodeURIComponent(fullUrl)}`
+			// );
+			const response = await loanDocument.getLoanDocumentByUrl(documentUrl)
+			if (response) {
 				const blob = await response.blob();
 				const url = URL.createObjectURL(blob);
 				setSelectedDocument(url);
@@ -222,10 +223,11 @@ export default function IndividualLoanDetailPage() {
 			const fullUrl = documentUrl.startsWith("http")
 				? documentUrl
 				: `/${documentUrl}`;
-			const response = await fetch(
-				`/api/loans/documents/view?url=${encodeURIComponent(fullUrl)}`
-			);
-			if (response.ok) {
+			// const response = await fetch(
+			// 	`/api/loans/documents/view?url=${encodeURIComponent(fullUrl)}`
+			// );
+			const response = await loanDocument.getLoanDocumentByUrl(documentUrl) 
+			if (response) {
 				const blob = await response.blob();
 				const url = URL.createObjectURL(blob);
 				const a = document.createElement("a");
