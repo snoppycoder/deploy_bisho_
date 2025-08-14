@@ -30,6 +30,7 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { authAPI } from "@/lib/api";
 
 const formSchema = z.object({
 	name: z.string().min(2, {
@@ -71,15 +72,16 @@ export default function AdminSignupPage() {
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		setIsLoading(true);
 		try {
-			const response = await fetch("/api/admin/signup", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(values),
-			});
+			// const response = await fetch("/api/admin/signup", {
+			// 	method: "POST",
+			// 	headers: {
+			// 		"Content-Type": "application/json",
+			// 	},
+			// 	body: JSON.stringify(values),
+			// });
+			const response = await authAPI.signup(values);
 
-			if (!response.ok) {
+			if (!response) {
 				throw new Error("Failed to create admin user");
 			}
 

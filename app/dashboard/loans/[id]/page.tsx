@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { loanDocument } from "@/lib/api";
 
 interface Document {
 	id: number;
@@ -38,12 +39,17 @@ export default function LoanDocumentsPage() {
 	const fetchDocuments = async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch(`/api/loans/${id}/documents`);
-			if (!response.ok) {
+			// const response = await fetch(`/api/loans/${id}/documents`);
+			// if (!response.ok) {
+			// 	throw new Error("Failed to fetch documents");
+			// }
+			// const data = await response.json();
+			const response = await loanDocument.getLoanDocumentById(parseInt(id[0])); // I will need to check this
+			if (!response) {
 				throw new Error("Failed to fetch documents");
 			}
-			const data = await response.json();
-			setDocuments(data);
+
+			setDocuments(response);
 		} catch (error) {
 			console.error("Error fetching documents:", error);
 			toast({

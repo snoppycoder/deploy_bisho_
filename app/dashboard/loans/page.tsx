@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { loanAPI } from "@/lib/api";
 
 interface Loan {
 	id: number;
@@ -37,12 +38,12 @@ export default function LoansListPage() {
 	const fetchLoans = useCallback(async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch("/api/loans");
-			if (!response.ok) {
+			const response = await loanAPI.getLoan();
+			if (!response) {
 				throw new Error("Failed to fetch loans");
 			}
-			const data = await response.json();
-			setLoans(data);
+			
+			setLoans(response);
 		} catch (error) {
 			console.error("Error fetching loans:", error);
 			toast({

@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { loanAPI } from "@/lib/api";
 
 interface Loan {
 	id: number;
@@ -40,10 +41,10 @@ export default function LoanApprovalDashboard() {
 
 	const fetchLoans = async () => {
 		try {
-			const response = await fetch("/api/loans/pending");
-			if (response.ok) {
-				const data = await response.json();
-				setLoans(data);
+			const response = await loanAPI.getPendingLoans();
+			if (response) {
+				
+				setLoans(response);
 			} else {
 				throw new Error("Failed to fetch loans");
 			}
@@ -96,10 +97,10 @@ export default function LoanApprovalDashboard() {
 	const canApprove = (loan: Loan) => {
 		const lastApproval = loan.approvalLogs[loan.approvalLogs.length - 1];
 		return (
-			(user?.role === "LOAN_OFFICER" && lastApproval.approvalOrder === 0) ||
-			(user?.role === "BRANCH_MANAGER" && lastApproval.approvalOrder === 1) ||
-			(user?.role === "REGIONAL_MANAGER" && lastApproval.approvalOrder === 2) ||
-			(user?.role === "FINANCE_ADMIN" && lastApproval.approvalOrder === 3)
+			(user?.role === "ACCOUNTANT" && lastApproval.approvalOrder === 0) ||
+			(user?.role === "MANAGER" && lastApproval.approvalOrder === 1) ||
+			(user?.role === "SUPERVISOR" && lastApproval.approvalOrder === 2) ||
+			(user?.role === "COMMITTEE" && lastApproval.approvalOrder === 3)
 		);
 	};
 

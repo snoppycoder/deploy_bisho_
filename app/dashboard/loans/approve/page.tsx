@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/components/auth-provider";
+import { loanAPI } from "@/lib/api";
 
 interface Loan {
 	id: number;
@@ -43,10 +44,15 @@ export default function LoanApprovePage() {
 	const fetchPendingLoans = async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch("/api/loans/pending");
-			if (response.ok) {
-				const data = await response.json();
-				setLoans(data);
+			// const response = await fetch("/api/loans/pending");
+			// if (response.ok) {
+			// 	const data = await response.json();
+			// 	setLoans(data);
+			const response = await loanAPI.getPendingLoans();
+			if (response) {
+				
+				setLoans(response);
+			
 			} else if (response.status === 401) {
 				toast({
 					title: "Unauthorized",

@@ -71,8 +71,21 @@ export const authAPI = {
     const response = await api.get("/auth/session");
     return response.data;
 
+  },
+  signup : async (
+    data: {
+    name: string;
+    email: string;
+    phone: string;
+    password: string;
+    role?: string;
   }
-};
+  ) => {
+    const response = await api.post("/auth/register", data);
+    return response.data;
+
+  }
+ };
 
 export const dashboardAPI = {
   getDashboardData: async () => {
@@ -167,7 +180,7 @@ export const membersLoanAPI = {
   getLoansById: async(
     Id: string[] | string
   ) => {
-    const response = await api.get(`/api/members/loans/${Id}`);
+    const response = await api.get(`/members/loans/${Id}`);
     return response.data;
   },
 
@@ -226,7 +239,12 @@ export const loanAPI = {
     params: query
   });
   return response.data;
-}
+ },
+ getPendingLoans : async () => {
+  const response = await api.get('/loans/pending');
+  return response.data;
+
+ }
 }
 
 
