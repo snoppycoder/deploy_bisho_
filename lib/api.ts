@@ -258,7 +258,9 @@ export const loanCalculator = {
 
 export const loanAgreement = {
   getLoanAgreement: async()=>{
-    const response = await api.get('/loans/agreement-template');
+    const response = await api.get('/loans/agreement-template', {
+      responseType : 'blob'
+    });
     return response.data;
   }
 }
@@ -278,9 +280,16 @@ export const loanDocument = {
     return response.data;
   },
 
-  getLoanDocument: async()=>{
+  getLoanDocument: async() => {
     const response = await api.get('/members/loans/documents');
     return response.data;
+  }
+}
+export const notificationAPI = {
+  getNotifications: async () => {
+    const response = await api.get('/notifications');
+    return response.data;
+
   }
 }
 

@@ -16,6 +16,7 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 import { useToast } from "@/components/ui/use-toast";
+import { notificationAPI } from "@/lib/api";
 
 interface Notification {
 	id: number;
@@ -37,13 +38,13 @@ export function Notifications() {
 
 	const fetchNotifications = async () => {
 		try {
-			const response = await fetch("/api/notifications");
-			if (!response.ok) {
+			const response = await notificationAPI.getNotifications();
+			if (!response) {
 				throw new Error("Failed to fetch notifications");
 			}
-			const data = await response.json();
-			setNotifications(data);
-			setUnreadCount(data.filter((n: Notification) => !n.read).length);
+			// const data = await response.json();
+			setNotifications(response);
+			setUnreadCount(response.filter((n: Notification) => !n.read).length);
 		} catch (error) {
 			console.error("Error fetching notifications:", error);
 			toast({

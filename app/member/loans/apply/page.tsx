@@ -68,6 +68,8 @@ export default function LoanApplicationPage() {
 		maxLoanBasedOnSalary,
 		maxLoanBasedOnContribution
 	);
+	console.log("based on salary", maxLoanBasedOnSalary);
+	console.log("required contribution", requiredContributionRate);
 	const requiredContribution =
 		Number.parseFloat(amount || "0") * requiredContributionRate;
 
@@ -95,6 +97,7 @@ export default function LoanApplicationPage() {
 		try {
 			setIsLoading(true);
 			const data = await membersLoanAPI.loanEligibilityReq();
+			console.log(data)
 			setMemberData(data);
 			
 			// use axios here
@@ -237,9 +240,9 @@ export default function LoanApplicationPage() {
 	const handleDownloadAgreement = async () => {
 		try {
 			const response = await loanAgreement.getLoanAgreement();
-			if (response.ok) {
-				const blob = await response.blob();
-				const url = window.URL.createObjectURL(blob);
+			if (response) {
+				
+				const url = window.URL.createObjectURL(response);
 				const a = document.createElement("a");
 				a.style.display = "none";
 				a.href = url;
