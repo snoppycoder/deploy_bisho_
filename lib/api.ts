@@ -244,6 +244,10 @@ export const loanAPI = {
   const response = await api.get('/loans/pending');
   return response.data;
 
+ },
+ approveLoans: async (id : number, status: string, comment: string) => {
+  const response = await api.post(`/loans/approve/${id}`, {status, comment});
+  return response.data;
  }
 }
 

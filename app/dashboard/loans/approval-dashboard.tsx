@@ -56,13 +56,19 @@ export default function LoanApprovalDashboard() {
 
 	const handleApprove = async (loanId: number) => {
 		try {
-			const response = await fetch("/api/loans/approve", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ loanId, status: "APPROVED" }),
-			});
+			// const response = await fetch("/api/loans/approve", {
+			// 	method: "POST",
+			// 	headers: { "Content-Type": "application/json" },
+			// 	body: JSON.stringify({ loanId, status: "APPROVED" }),
+			// });
+			// const response = await loanAPI.approveLoans(loanAPI);
+			const response = await loanAPI.approveLoans(
+													loanId,
+													"APPROVED",
+													"Loan has been approved"
+													);
 
-			if (response.ok) {
+			if (response) {
 				toast({ title: "Loan approved successfully" });
 				fetchLoans();
 			} else {
@@ -76,11 +82,11 @@ export default function LoanApprovalDashboard() {
 
 	const handleReject = async (loanId: number) => {
 		try {
-			const response = await fetch("/api/loans/approve", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({ loanId, status: "REJECTED" }),
-			});
+			const response = await loanAPI.approveLoans(
+													loanId,
+													"REJECTED",
+													"Loan has been rejected"
+													);
 
 			if (response.ok) {
 				toast({ title: "Loan rejected successfully" });
