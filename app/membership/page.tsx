@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, FileText } from "lucide-react";
 import Link from "next/link";
+import { membersAPI, membershipAPI } from "@/lib/api";
 
 export default function MembershipRequestPage() {
 	const [formData, setFormData] = useState({
@@ -129,17 +130,13 @@ export default function MembershipRequestPage() {
 				submitData.append("signature", files.signature);
 			}
 			if (files.idCard) {
-				submitData.append("idCard", files.idCard);
+				submitData.append("national_id", files.idCard);
 			}
 
 			submitData.append("termsAccepted", termsAccepted.toString());
 
-			const response = await fetch("/api/membership/request", {
-				method: "POST",
-				body: submitData,
-			});
-
-			if (response.ok) {
+			const response = await membershipAPI.membershipRequest(submitData)
+			if (response) {
 				toast({
 					title: "Success!",
 					description:

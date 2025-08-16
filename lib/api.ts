@@ -304,13 +304,20 @@ export const notificationAPI = {
 export const membershipAPI = {
   getMembershipRequests: async () => {
     const response = await api.get('/membership/requests') ;
-    return response.data
+    return response.data;
   },
   getMembershipRequestById: async (id : number, status : string ) => {
     const response = await api.patch(`/membership/requests/${id}`, {status}) ;
-    return response.data
-  }
-  
+    return response.data;
+  },
+  membershipRequest: async (data: FormData) => {
+  const response = await api.post('/membership/request', data, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+}
+
+
 }
 
 export default api;
