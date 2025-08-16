@@ -252,7 +252,7 @@ export default function MembershipRequestPage() {
 										id="salary"
 										name="salary"
 										type="number"
-										value={formData.salary}
+										value={parseInt(formData.salary)}
 										onChange={handleInputChange}
 										placeholder="Enter your monthly salary"
 										className="focus:ring-2 focus:ring-primary/20"

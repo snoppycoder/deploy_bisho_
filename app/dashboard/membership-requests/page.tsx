@@ -30,7 +30,8 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, CheckCircle, XCircle, Eye, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { membersAPI, membershipAPI } from "@/lib/api";
+import { authAPI, membersAPI, membershipAPI } from "@/lib/api";
+import { useAuth } from "@/components/auth-provider";
 
 interface MembershipRequest {
 	id: number;
@@ -56,9 +57,10 @@ export default function MembershipRequestsReviewPage() {
 	const [activeTab, setActiveTab] = useState("all");
 	const router = useRouter();
 	const { toast } = useToast();
-
+	const {user, logout} = useAuth();
 	useEffect(() => {
 		fetchMembershipRequests();
+		
 	}, []);
 
 	useEffect(() => {
@@ -70,6 +72,9 @@ export default function MembershipRequestsReviewPage() {
 			);
 		}
 	}, [activeTab, requests]);
+
+	//let us get the role of the logged user
+	
 
 	const fetchMembershipRequests = async () => {
 		setIsLoading(true);
@@ -97,7 +102,7 @@ export default function MembershipRequestsReviewPage() {
 	const handleStatusUpdate = async (id: number, newStatus: string) => {
 		setIsProcessing(true);
 		try {
-			const response = await membershipAPI.getMembershipRequestById(id, status)
+			const response = await membershipAPI.getMembershipRequestById(id, newStatus)
 
 			if (response) {
 				
@@ -170,7 +175,7 @@ export default function MembershipRequestsReviewPage() {
 					Membership Requests
 				</h1>
 				<Button onClick={fetchMembershipRequests} variant="outline" size="sm">
-					<RefreshCw className="h-4 w-4 mr-2" />
+					<RefreshCw className="h-4 w-4 tmr-2" />
 					Refresh
 				</Button>
 			</div>
@@ -266,8 +271,12 @@ export default function MembershipRequestsReviewPage() {
 																		variant="ghost"
 																		size="icon"
 																		className="text-green-600 hover:text-green-700 hover:bg-green-50"
-																		onClick={() =>
-																			handleStatusUpdate(request.id, "APPROVED")
+																		onClick={() => {
+																			let status = user?.role !== 'MANAGER' ? 'PENDING' : 'APPROVED';
+																			
+																			handleStatusUpdate(request.id, status);
+																		}
+																			
 																		}
 																		disabled={isProcessing}
 																		title="Approve Request">

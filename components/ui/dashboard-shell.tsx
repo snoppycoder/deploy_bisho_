@@ -148,7 +148,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
     title: "Membership Requests",
     href: "/dashboard/membership-requests",
     icon: Users,
-    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR", "COMMITTEE"],
+    roles: ["ACCOUNTANT", "MANAGER", "SUPERVISOR"],
   },
   {
     title: "Reports",
