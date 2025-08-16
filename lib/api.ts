@@ -7,6 +7,11 @@ export interface LoanApprovalHistoryQuery {
   page?: number;
   pageSize?: number;
 }
+export enum MembershipApproval {
+  APPROVED,
+  PENDING,
+  REJECTED
+}
 // i will create a model.ts
 
 const api = axios.create({
@@ -295,6 +300,17 @@ export const notificationAPI = {
     return response.data;
 
   }
+}
+export const membershipAPI = {
+  getMembershipRequests: async () => {
+    const response = await api.get('/membership/requests') ;
+    return response.data
+  },
+  getMembershipRequestById: async (id : number, status : string ) => {
+    const response = await api.patch(`/membership/requests/${id}`, {status}) ;
+    return response.data
+  }
+  
 }
 
 export default api;

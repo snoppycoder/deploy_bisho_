@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Loader2, CheckCircle, XCircle, Eye, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { membersAPI, membershipAPI } from "@/lib/api";
 
 interface MembershipRequest {
 	id: number;
@@ -73,11 +74,11 @@ export default function MembershipRequestsReviewPage() {
 	const fetchMembershipRequests = async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch("/api/membership/requests");
-			if (response.ok) {
-				const data = await response.json();
-				setRequests(data);
-				setFilteredRequests(data);
+			const response = await membershipAPI.getMembershipRequests();
+			if (response) {
+				
+				setRequests(response);
+				setFilteredRequests(response);
 			} else {
 				throw new Error("Failed to fetch membership requests");
 			}
@@ -96,23 +97,17 @@ export default function MembershipRequestsReviewPage() {
 	const handleStatusUpdate = async (id: number, newStatus: string) => {
 		setIsProcessing(true);
 		try {
-			const response = await fetch(`/api/membership/requests/${id}`, {
-				method: "PATCH",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({ status: newStatus }),
-			});
+			const response = await membershipAPI.getMembershipRequestById(id, status)
 
-			if (response.ok) {
-				const data = await response.json();
+			if (response) {
+				
 
 				// Show appropriate toast based on status
 				if (newStatus === "APPROVED") {
 					toast({
 						title: "Request Approved",
-						description: data.newMember
-							? `Member created with ID: ${data.newMember.memberNumber}`
+						description: response.newMember
+							? `Member created with ID: ${response.newMember.memberNumber}`
 							: "Membership request has been approved.",
 						variant: "default",
 					});

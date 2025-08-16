@@ -57,6 +57,12 @@ model MembershipRequest {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }
+enum MembershipApproval {
+  APPROVED 
+  PENDING
+  REJECTED
+}
+
 
 model MemberBalance {
   id                  Int      @id @default(autoincrement())
