@@ -205,7 +205,7 @@ export const membersLoanAPI = {
   loanTerm: number;
   repaymentFrequency: "monthly" | "quarterly" | "annually";
 }) => {
-  const response = await api.post("/members/loans/calculate", data);
+  const response = await api.post("/loans/calculate", data);
   return response.data;
 },
 
@@ -269,7 +269,7 @@ export const loanAPI = {
 
 export const loanCalculator = {
   getCalculated: async( loanAmount:number, interestRate:number, loanTerm:number, repaymentFrequency: "monthly" | "quarterly" | "annually") => {
-    const result = await api.post('loans/calculate', {loanAmount, interestRate, loanTerm, repaymentFrequency});
+    const result = await api.post('/loans/calculate', {loanAmount, interestRate, loanTerm, repaymentFrequency});
     return result.data;
        
   }

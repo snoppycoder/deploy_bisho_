@@ -18,6 +18,7 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { LockKeyhole, User } from "lucide-react";
+import { PasswordInput } from "@/components/ui/passwordInput";
 
 export default function LoginPage() {
 	const [identifier, setIdentifier] = useState("");
@@ -90,11 +91,11 @@ export default function LoginPage() {
 										Forgot password?
 									</a>
 								</div>
-								<div className="relative">
+								
 									<div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
 										<LockKeyhole className="h-4 w-4 text-slate-400" />
 									</div>
-									<Input
+									<PasswordInput
 										id="password"
 										name="password"
 										type="password"
@@ -104,7 +105,7 @@ export default function LoginPage() {
 										value={password}
 										onChange={(e) => setPassword(e.target.value)}
 									/>
-								</div>
+								
 							</div>
 
 							{error && (
