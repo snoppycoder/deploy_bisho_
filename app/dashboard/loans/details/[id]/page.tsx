@@ -136,9 +136,10 @@ export default function IndividualLoanDetailPage() {
 		setIsLoading(true);
 		try {
 			const data = await loanAPI.getLoanById(params.id[0]);
-			if (data && data.length > 0) {
+			console.log(data)
+			if (data) {
 				
-				setLoanDetail(data[0]);
+				setLoanDetail(data);
 			} else {
 				throw new Error("Failed to fetch loan detail");
 			}
@@ -152,20 +153,21 @@ export default function IndividualLoanDetailPage() {
 
 	const handleStatusUpdate = async () => {
 		try {
-			const response = await fetch(`/api/loans/${params.id}/update-status`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					status: newStatus,
-					comments: comments,
-				}),
-			});
+			// const response = await fetch(`/api/loans/${params.id}/update-status`, {
+			// 	method: "POST",
+			// 	headers: {
+			// 		"Content-Type": "application/json",
+			// 	},
+			// 	body: JSON.stringify({
+			// 		status: newStatus,
+			// 		comments: comments,
+			// 	}),
+			// });
+			const response = await loanAPI.approveLoans(Number(params.id[0]), newStatus, comments)
 
-			const data = await response.json();
+			// const data = await response.json();
 
-			if (response.ok) {
+			if (response) {
 				toast({
 					title: "Loan status updated successfully",
 					description:
@@ -176,7 +178,7 @@ export default function IndividualLoanDetailPage() {
 				setIsUpdateDialogOpen(false);
 				fetchLoanDetail(); // Refresh the loan details
 			} else {
-				throw new Error(data.error || "Failed to update loan status");
+				throw new Error(response.error || "Failed to update loan status");
 			}
 		} catch (error) {
 			console.error("Error updating loan status:", error);

@@ -29,8 +29,6 @@ interface PendingLoan {
 
 export default function PendingLoansPage() {
 	const [pendingLoans, setPendingLoans] = useState<PendingLoan[]>([]);
-	const { user } = useAuth();
-	const router = useRouter();
 	const { toast } = useToast();
 
 	useEffect(() => {

@@ -64,6 +64,7 @@ export default function LoanDetailsPage() {
 			const data = await loanAPI.getLoan()
 			if (data) {
 				setLoans(data);
+				console.log(data)
 			} else {
 				throw new Error("Failed to fetch loans");
 			}
