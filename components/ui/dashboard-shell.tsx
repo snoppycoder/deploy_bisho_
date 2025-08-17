@@ -42,8 +42,6 @@ type UserType  = {
 export function DashboardShell({ children }: DashboardShellProps) {
 
 	const { user, logout } = useAuth();
-	console.log("[Component] user from AuthContext:", user);
-	
 	const pathname = usePathname();
 	const [isOpen, setIsOpen] = useState(false);
 
@@ -170,12 +168,12 @@ export function DashboardShell({ children }: DashboardShellProps) {
   },
 ];
 
-    console.log("User role:", user?.role);
+    
 
 	const filteredNavItems = navItems.filter(
 		(item) => user && item.roles.includes(user.role )
 	);
-     console.log("Filtered nav items:", filteredNavItems);
+    
 	useEffect(() => {
 		const handleResize = () => {
 			if (window.innerWidth >= 768) {
@@ -232,7 +230,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
 					<div className="flex-1 overflow-y-auto py-2">
 						<nav className="grid gap-1 px-2">
 							{filteredNavItems.map((item, index) => (
-								console.log("[DashboardShell] Rendering nav item:", user),
+								
 								<Link
 									key={index}
 									href={item.href}

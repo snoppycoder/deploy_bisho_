@@ -215,7 +215,7 @@ export default function MembersListPage() {
 				header: "Total Contributions",
 				cell: ({ row }) => {
 					const amount = row.original.balance.totalContributions;
-					console.log("here orignal" ,row.original)
+				
 					if (amount === 0) {
 						return <div className="text-muted-foreground italic">No data</div>;
 					}

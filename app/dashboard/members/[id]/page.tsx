@@ -91,7 +91,7 @@ function MemberDetailPage() {
 			setIsLoading(true);
 			try {
 				// const response = await fetch(`/api/members/${params.id}`);
-				console.log(params.id)
+				
 				const response = await membersAPI.getMember(params.id[0]);
 				if (!response) {
 					throw new Error("Failed to fetch member details");

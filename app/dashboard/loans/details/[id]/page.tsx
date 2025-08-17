@@ -115,6 +115,7 @@ export default function IndividualLoanDetailPage() {
 	const [selectedRepayment, setSelectedRepayment] = useState<number | null>(
 		null
 	);
+	
 	const [paymentFormData, setPaymentFormData] = useState<PaymentFormData>({
 		repaymentId: 0,
 		amount: 0,
@@ -135,8 +136,8 @@ export default function IndividualLoanDetailPage() {
 	const fetchLoanDetail = async () => {
 		setIsLoading(true);
 		try {
-			const data = await loanAPI.getLoanById(params.id[0]);
-			console.log(data)
+			const data = await loanAPI.getLoanById(params.id);
+			
 			if (data) {
 				
 				setLoanDetail(data);
@@ -163,9 +164,13 @@ export default function IndividualLoanDetailPage() {
 			// 		comments: comments,
 			// 	}),
 			// });
-			const response = await loanAPI.approveLoans(Number(params.id[0]), newStatus, comments)
-
-			// const data = await response.json();
+			// if (user?.role !== 'COMMITTEE'){
+			// 	if (newStatus == 'APPROVED') {
+			// 		const response = await loanAPI.approveLoans(Number(params.id), 'PENDING', comments)
+			// 	}
+			// }
+			const response = await loanAPI.approveLoans(Number(params.id), newStatus, comments);
+			console.log(params.id)
 
 			if (response) {
 				toast({
@@ -912,12 +917,19 @@ export default function IndividualLoanDetailPage() {
 								<SelectValue placeholder="Select new status" />
 							</SelectTrigger>
 							<SelectContent>
-								<SelectItem value="PENDING">Pending</SelectItem>
-								<SelectItem value="VERIFIED">Verified</SelectItem>
-								<SelectItem value="APPROVED">Approved</SelectItem>
-								<SelectItem value="REJECTED">Rejected</SelectItem>
-								<SelectItem value="DISBURSED">Disbursed</SelectItem>
-								<SelectItem value="REPAID">Repaid</SelectItem>
+								{/* <SelectItem 
+								value="PENDING" >
+								Pending
+								</SelectItem> */}
+
+							{/* <SelectItem value="VERIFIED">Verified</SelectItem> */}
+							<SelectItem value="APPROVED">Approved</SelectItem>
+							<SelectItem value="REJECTED">Rejected</SelectItem>
+							{user?.role === "COMMITTEE" && (
+								<SelectItem value="DISBURSED">
+									Disbursed
+								</SelectItem>
+								)}
 							</SelectContent>
 						</Select>
 						<Textarea

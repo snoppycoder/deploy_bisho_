@@ -1,5 +1,6 @@
 import { MemberData } from "@/app/models";
 import axios from "axios";
+import { string } from "prop-types";
 export interface LoanApprovalHistoryQuery {
   search?: string;
   status?: "ALL" | "PENDING" | "APPROVED" | "REJECTED";
@@ -244,11 +245,20 @@ export const loanAPI = {
     const response = await api.get('/loans');
     return response.data
   },
-  getLoanById: async(id : string) => {
-    const response = await api.get(`/loans/${id}`);
-    return response.data;
+ getLoanById: async (id: string[] | string) => {
+  let param: number;
 
-  },
+  if (typeof id === "string") {
+    param = Number.parseInt(id, 10);
+  } else {
+    // join array into single string, then parse
+    param = Number.parseInt(id.join(""), 10);
+  }
+
+  const response = await api.get(`/loans/${param}`);
+  return response.data;
+}
+,
  getLoanApprovalHistory: async (query: LoanApprovalHistoryQuery = {}) => {
   const response = await api.get('/loans/approval-history', {
     params: query
