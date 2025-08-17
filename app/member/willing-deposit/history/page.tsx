@@ -37,9 +37,9 @@ export default function WillingDepositHistoryPage() {
 		const fetchRequests = async () => {
 			try {
 				const response = await membersAPI.getWillingDeposits(user?.id);
-				if (response.ok) {
-					const data = await response.json();
-					setRequests(data);
+				if (response) {
+					
+					setRequests(response);
 				} else {
 					throw new Error("Failed to fetch requests");
 				}

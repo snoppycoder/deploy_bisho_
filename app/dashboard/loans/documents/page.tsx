@@ -24,6 +24,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { loanDocument } from "@/lib/api";
 
 interface LoanDocument {
 	id: number;
@@ -46,23 +47,41 @@ export default function LoanDocumentsPage() {
 		fetchDocuments();
 	}, []);
 
+	// const fetchDocuments = async () => {
+	// 	try {
+	// 		const response = await fetch("/api/loans/documents");
+	// 		if (response.ok) {
+	// 			const data = await response.json();
+	// 			setDocuments(data);
+	// 		} else {
+	// 			throw new Error("Failed to fetch loan documents");
+	// 		}
+	// 	} catch (error) {
+	// 		console.error("Error fetching loan documents:", error);
+	// 		toast({
+	// 			title: "Failed to fetch loan documents",
+	// 			variant: "destructive",
+	// 		});
+	// 	}
+	// };
 	const fetchDocuments = async () => {
-		try {
-			const response = await fetch("/api/loans/documents");
-			if (response.ok) {
-				const data = await response.json();
-				setDocuments(data);
-			} else {
-				throw new Error("Failed to fetch loan documents");
+			try {
+				const response = await loanDocument.getLoanDocument();
+				if (response) {
+					
+					setDocuments(response);
+				} else {
+					throw new Error("Failed to fetch loan documents");
+				}
+			} catch (error) {
+				console.error("Error fetching loan documents:", error);
+				toast({
+					title: "Failed to fetch loan documents",
+					variant: "destructive",
+				});
 			}
-		} catch (error) {
-			console.error("Error fetching loan documents:", error);
-			toast({
-				title: "Failed to fetch loan documents",
-				variant: "destructive",
-			});
-		}
-	};
+		};
+	
 
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {

@@ -22,6 +22,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Download, Printer } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { membersAPI } from "@/lib/api";
 
 interface MemberDetails {
 	id: number;
@@ -89,12 +90,14 @@ function MemberDetailPage() {
 		const fetchMemberDetails = async () => {
 			setIsLoading(true);
 			try {
-				const response = await fetch(`/api/members/${params.id}`);
-				if (!response.ok) {
+				// const response = await fetch(`/api/members/${params.id}`);
+				console.log(params.id)
+				const response = await membersAPI.getMember(params.id[0]);
+				if (!response) {
 					throw new Error("Failed to fetch member details");
 				}
-				const data = await response.json();
-				setMemberDetails(data.member);
+				
+				setMemberDetails(response.member);
 			} catch (error) {
 				console.error("Error fetching member details:", error);
 				toast({

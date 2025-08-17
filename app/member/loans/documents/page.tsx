@@ -32,9 +32,9 @@ export default function MemberLoanDocumentsPage() {
 	const fetchDocuments = async () => {
 		try {
 			const response = await loanDocument.getLoanDocument();
-			if (response.ok) {
-				const data = await response.json();
-				setDocuments(data);
+			if (response) {
+				
+				setDocuments(response);
 			} else {
 				throw new Error("Failed to fetch loan documents");
 			}

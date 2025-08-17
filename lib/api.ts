@@ -1,3 +1,4 @@
+import { MemberData } from "@/app/models";
 import axios from "axios";
 export interface LoanApprovalHistoryQuery {
   search?: string;
@@ -123,6 +124,15 @@ export const membersAPI = {
   });
   return response.data;
 },
+ importMembers: async (members: MemberData[]) => {
+  
+      const response = await api.post("/members/import", members, {
+        headers: {
+          "Content-Type": "application/json", // just incase
+        },
+      });
+      return response.data;
+    },
 
 getWillingDeposits: async (
   userId: number | undefined
@@ -235,7 +245,7 @@ export const loanAPI = {
     return response.data
   },
   getLoanById: async(id : string) => {
-    const response = await api.get('/loans', {params: {id}});
+    const response = await api.get(`/loans/${id}`);
     return response.data;
 
   },

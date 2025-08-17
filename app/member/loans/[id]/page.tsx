@@ -130,11 +130,11 @@ export default function LoanDetailPage() {
 			try {
 				setIsLoading(true);
 				const response = await membersLoanAPI.getLoansById(params.id);
-				if (!response.ok) {
+				if (!response) {
 					throw new Error("Failed to fetch loan details");
 				}
-				const data = await response.json();
-				setLoan(data);
+				
+				setLoan(response);
 			} catch (error) {
 				console.error("Error fetching loan details:", error);
 				toast({
@@ -412,9 +412,9 @@ export default function LoanDetailPage() {
 				}
 			);
 
-			const data = await response.json();
+			
 
-			if (response.ok) {
+			if (response) {
 				toast({
 					title: "Payment initiated successfully",
 					description: `Your payment of ${formatCurrency(
@@ -425,12 +425,12 @@ export default function LoanDetailPage() {
 
 				// Refresh loan details
 				const loanResponse = await membersLoanAPI.getLoansById(params.id);
-				if (loanResponse.ok) {
-					const loanData = await loanResponse.json();
-					setLoan(loanData);
+				if (loanResponse) {
+					
+					setLoan(loanResponse);
 				}
 			} else {
-				throw new Error(data.error || "Failed to process payment");
+				throw new Error(response.error || "Failed to process payment");
 			}
 		} catch (error) {
 			console.error("Error processing payment:", error);

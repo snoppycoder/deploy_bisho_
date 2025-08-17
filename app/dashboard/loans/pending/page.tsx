@@ -13,6 +13,7 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { useToast } from "@/components/ui/use-toast";
+import { loanAPI } from "@/lib/api";
 
 interface PendingLoan {
 	id: number;
@@ -38,10 +39,9 @@ export default function PendingLoansPage() {
 
 	const fetchPendingLoans = async () => {
 		try {
-			const response = await fetch("/api/loans/pending");
-			if (response.ok) {
-				const data = await response.json();
-				setPendingLoans(data);
+			const response = await loanAPI.getPendingLoans();
+			if (response) {
+				setPendingLoans(response);
 			} else {
 				throw new Error("Failed to fetch pending loans");
 			}

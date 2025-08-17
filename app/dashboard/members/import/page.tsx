@@ -19,6 +19,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Loader2, CheckCircle, AlertCircle, XCircle } from "lucide-react";
 import * as XLSX from "xlsx";
 import { Progress } from "@/components/ui/progress";
+import { membersAPI } from "@/lib/api";
 
 interface MemberData {
 	"Location Category": string;
@@ -62,7 +63,6 @@ export default function ImportMembersPage() {
 	const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		if (e.target.files) {
 			setFile(e.target.files[0]);
-			// Reset states when a new file is selected
 			setImportErrors([]);
 			setImportResult(null);
 			setUploadProgress(0);
@@ -92,36 +92,38 @@ export default function ImportMembersPage() {
 				const sheetName = workbook.SheetNames[0];
 				const worksheet = workbook.Sheets[sheetName];
 				const jsonData: MemberData[] = XLSX.utils.sheet_to_json(worksheet);
+				console.log("jsondata", jsonData)
 
 				setUploadProgress(50);
 
-				const response = await fetch("/api/members/import", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(jsonData),
-				});
+				// const response = await fetch("/api/members/import", {
+				// 	method: "POST",
+				// 	headers: {
+				// 		"Content-Type": "application/json",
+				// 	},
+				// 	body: JSON.stringify(jsonData),
+				// });
+				const response = await membersAPI.importMembers(jsonData);
 
 				setUploadProgress(90);
 
-				if (!response.ok) {
+				if (!response) {
 					throw new Error("Failed to import members");
 				}
 
-				const result: ImportResult = await response.json();
+				// const result: ImportResult = await response.json();
 				setUploadProgress(100);
 
 				// Store the complete result
-				setImportResult(result);
+				setImportResult(response);
 
-				if (result.errors && result.errors.length > 0) {
-					setImportErrors(result.errors);
+				if (response.errors && response.errors.length > 0) {
+					setImportErrors(response.errors);
 				}
 
 				toast({
 					title: "Import Complete",
-					description: `Imported ${result.importedCount} members successfully.`,
+					description: `Imported ${response.importedCount} members successfully.`,
 				});
 			} catch (error) {
 				console.error("Error importing members:", error);

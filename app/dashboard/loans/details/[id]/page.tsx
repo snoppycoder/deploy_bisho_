@@ -341,22 +341,22 @@ export default function IndividualLoanDetailPage() {
 		const monthlyPayment = totalRepayable / tenureMonths;
 
 		// Calculate paid and remaining amounts
-		// const totalPaid = loanDetail.loanRepayments.reduce(
-		// 	(sum, repayment) => sum + Number(repayment.paidAmount),
-		// 	0
-		// );
+		console.log("REPAYMENT ", loanDetail)
+		const totalPaid = loanDetail.loanRepayments.reduce(
+			(sum, repayment) => sum + Number(repayment.paidAmount),
+			0
+		);
 		
-		console.log(loanDetail)
+		
 
-
-		const totalPaid = loanDetail.loanRepayments.reduce((sum, repayment) => {
-			if (repayment.paidAmount !== undefined) {
-				return sum + Number(repayment.paidAmount);
-			} else if (repayment.status === "PAID") {
-				return sum + Number(repayment.amount);
-			}
-			return sum;
-		}, 0);
+		// const totalPaid = loanDetail.loanRepayments.reduce((sum, repayment) => {
+		// 	if (repayment.paidAmount !== undefined) {
+		// 		return sum + Number(repayment.paidAmount);
+		// 	} else if (repayment.status === "PAID") {
+		// 		return sum + Number(repayment.amount);
+		// 	}
+		// 	return sum;
+		// }, 0);
 
 		const remainingAmount =
 			loanDetail.remainingAmount !== undefined

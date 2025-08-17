@@ -89,6 +89,7 @@ export default function MembersListPage() {
 				throw new Error("Failed to fetch members");
 			}
 			// const data = await response.json();
+			console.log(response)
 			setMembers(response);
 		} catch (error) {
 			console.error("Error fetching members:", error);
@@ -103,7 +104,11 @@ export default function MembersListPage() {
 	useEffect(() => {
 		fetchMembers();
 	}, [fetchMembers]);
-
+	
+	// useEffect(() => {
+	// 	fetchMembers();
+	// }, []);
+	
 	const columns: ColumnDef<Member>[] = useMemo(
 		() => [
 			{
@@ -123,6 +128,7 @@ export default function MembersListPage() {
 						onCheckedChange={(value) => row.toggleSelected(!!value)}
 						aria-label="Select row"
 					/>
+					
 				),
 				enableSorting: false,
 				enableHiding: false,
@@ -209,6 +215,7 @@ export default function MembersListPage() {
 				header: "Total Contributions",
 				cell: ({ row }) => {
 					const amount = row.original.balance.totalContributions;
+					console.log("here orignal" ,row.original)
 					if (amount === 0) {
 						return <div className="text-muted-foreground italic">No data</div>;
 					}

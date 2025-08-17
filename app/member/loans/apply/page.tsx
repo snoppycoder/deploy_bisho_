@@ -100,7 +100,7 @@ export default function LoanApplicationPage() {
 			console.log(data)
 			setMemberData(data);
 			
-			// use axios here
+		
 			
 		} catch (error) {
 			console.error("Error fetching member data:", error);
@@ -206,23 +206,23 @@ export default function LoanApplicationPage() {
 		try {
 			const response = await membersLoanAPI.apply({
 				amount: Number.parseInt(amount),
-				interestRate : Number.parseInt(interestRate),
+				interestRate : Number.parseFloat(interestRate),
 				tenureMonths : Number.parseInt(tenureMonths) ,
 				purpose,
 				coSigner1,
 				coSigner2,
 				agreement: file!,
 			})
-			if (response.ok) {
-				const data = await response.json();
+			if (response) {
+				
 				toast({
 					title: "Loan Application Submitted",
 					description: "Your loan application has been submitted successfully.",
 				});
 				router.push("/member/loans");
 			} else {
-				const errorData = await response.json();
-				throw new Error(errorData.error || "Failed to submit loan application");
+				
+				throw new Error(response.error || "Failed to submit loan application");
 			}
 		} catch (error) {
 			console.error("Error submitting loan application:", error);

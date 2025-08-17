@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/components/auth-provider";
+import { loanAPI } from "@/lib/api";
 
 interface Loan {
 	id: number;
@@ -47,18 +48,20 @@ export default function LoanManagementPage() {
 	const fetchLoans = async () => {
 		setIsLoading(true);
 		try {
-			const response = await fetch("/api/loans");
-			if (response.ok) {
-				const data = await response.json();
-				setLoans(data);
-			} else if (response.status === 401) {
-				toast({
-					title: "Unauthorized",
-					description: "You don't have permission to view this page.",
-					variant: "destructive",
-				});
-				router.push("/dashboard");
-			} else {
+			const response = await loanAPI.getLoan();
+			if (response) {
+				
+				setLoans(response);
+			} 
+			// else {
+			// 	toast({
+			// 		title: "Unauthorized",
+			// 		description: "You don't have permission to view this page.",
+			// 		variant: "destructive",
+			// 	});
+			// 	router.push("/dashboard");
+			// } 
+			else {
 				throw new Error("Failed to fetch loans");
 			}
 		} catch (error) {
