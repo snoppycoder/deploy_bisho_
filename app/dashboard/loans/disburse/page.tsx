@@ -35,6 +35,7 @@ import {
 	Bar,
 } from "recharts";
 import { DollarSign, Users, TrendingUp, Calendar, Search } from "lucide-react";
+import { loanAPI } from "@/lib/api";
 
 interface Loan {
 	id: number;
@@ -69,10 +70,10 @@ export default function DisbursedLoansPage() {
 
 	const fetchDisbursedLoans = async () => {
 		try {
-			const response = await fetch("/api/loans/disbursed");
-			if (response.ok) {
-				const data = await response.json();
-				setLoans(data);
+			const response = await loanAPI.getDisbursedLoan()
+			if (response) {
+				
+				setLoans(response);
 			} else {
 				throw new Error("Failed to fetch disbursed loans");
 			}

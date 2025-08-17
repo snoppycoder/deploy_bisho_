@@ -341,9 +341,9 @@ export default function LoanDetailPage() {
 				? documentUrl
 				: `/${documentUrl}`;
 			const response = await loanDocument.getLoanDocumentByUrl(fullUrl);
-			if (response.ok) {
-				const blob = await response.blob();
-				const url = URL.createObjectURL(blob);
+			if (response) {
+				
+				const url = URL.createObjectURL(response);
 				setSelectedDocument(url);
 			} else {
 				throw new Error("Failed to load document");
@@ -365,9 +365,9 @@ export default function LoanDetailPage() {
 				? documentUrl
 				: `/${documentUrl}`;
 			const response = await loanDocument.getLoanDocumentByUrl(fullUrl);
-			if (response.ok) {
-				const blob = await response.blob();
-				const url = URL.createObjectURL(blob);
+			if (response) {
+				
+				const url = URL.createObjectURL(response);
 				const a = document.createElement("a");
 				a.href = url;
 				a.download = fileName;

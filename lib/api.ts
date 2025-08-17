@@ -270,6 +270,11 @@ export const loanAPI = {
   return response.data;
 
  },
+ getDisbursedLoan : async () => {
+  const response = await api.get("/loans/disbursed");
+  return response.data
+
+ },
  approveLoans: async (id : number, status: string, comment: string) => {
   const response = await api.post(`/loans/approve/${id}`, {status, comment});
   return response.data;
@@ -305,7 +310,9 @@ export const loanDocument = {
   getLoanDocumentByUrl: async(
     URL: string
   )=>{
-    const response = await api.get(`/members/documents/view?url=${encodeURIComponent(URL)}`);
+    const response = await api.get(`/members/documents/view?url=${encodeURIComponent(URL)}`, {
+       responseType: "blob",
+    });
     return response.data;
   },
 
