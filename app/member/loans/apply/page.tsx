@@ -212,7 +212,8 @@ export default function LoanApplicationPage() {
 				coSigner1,
 				coSigner2,
 				agreement: file!,
-			})
+			});
+			console.log(interestRate)
 			if (response) {
 				
 				toast({
