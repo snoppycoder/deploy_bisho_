@@ -88,6 +88,7 @@ export default function LoanCalculatorPage() {
 
 			// const result = await response.json();
 			setCalculationResult(response);
+			console.log("calculated", response)
 		} catch (error) {
 			console.error("Error calculating loan:", error);
 			toast({

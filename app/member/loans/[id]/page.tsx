@@ -425,9 +425,11 @@ export default function LoanDetailPage() {
 
 				// Refresh loan details
 				const loanResponse = await membersLoanAPI.getLoansById(params.id);
+				console.log("loanResponse", loanResponse, )
 				if (loanResponse) {
-					
+
 					setLoan(loanResponse);
+					
 				}
 			} else {
 				throw new Error(response.error || "Failed to process payment");

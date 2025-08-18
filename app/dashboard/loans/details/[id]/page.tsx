@@ -154,21 +154,7 @@ export default function IndividualLoanDetailPage() {
 
 	const handleStatusUpdate = async () => {
 		try {
-			// const response = await fetch(`/api/loans/${params.id}/update-status`, {
-			// 	method: "POST",
-			// 	headers: {
-			// 		"Content-Type": "application/json",
-			// 	},
-			// 	body: JSON.stringify({
-			// 		status: newStatus,
-			// 		comments: comments,
-			// 	}),
-			// });
-			// if (user?.role !== 'COMMITTEE'){
-			// 	if (newStatus == 'APPROVED') {
-			// 		const response = await loanAPI.approveLoans(Number(params.id), 'PENDING', comments)
-			// 	}
-			// }
+			
 			const response = await loanAPI.approveLoans(Number(params.id), newStatus, comments);
 			console.log(params.id)
 
@@ -348,22 +334,24 @@ export default function IndividualLoanDetailPage() {
 		const monthlyPayment = totalRepayable / tenureMonths;
 
 		// Calculate paid and remaining amounts
-		console.log("REPAYMENT ", loanDetail)
-		const totalPaid = loanDetail.loanRepayments.reduce(
-			(sum, repayment) => sum + Number(repayment.paidAmount),
-			0
-		);
+		
+		// const totalPaid = loanDetail.loanRepayments.reduce(
+		// 	(sum, repayment) => sum + Number(repayment.paidAmount),
+		// 	0
+
+		// );
+		console.log("TOTAL PAID ", loanDetail.loanRepayments)
 		
 		
 
-		// const totalPaid = loanDetail.loanRepayments.reduce((sum, repayment) => {
-		// 	if (repayment.paidAmount !== undefined) {
-		// 		return sum + Number(repayment.paidAmount);
-		// 	} else if (repayment.status === "PAID") {
-		// 		return sum + Number(repayment.amount);
-		// 	}
-		// 	return sum;
-		// }, 0);
+		const totalPaid = loanDetail.loanRepayments.reduce((sum, repayment) => {
+			if (repayment.paidAmount !== undefined) {
+				return sum + Number(repayment.paidAmount);
+			} else if (repayment.status === "PAID") {
+				return sum + Number(repayment.amount);
+			}
+			return sum;
+		}, 0);
 
 		const remainingAmount =
 			loanDetail.remainingAmount !== undefined
