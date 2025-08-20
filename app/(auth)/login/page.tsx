@@ -34,7 +34,6 @@ export default function LoginPage() {
 
 		const result = await login(identifier, password);
 
-		
 		if (result.success) {
 			router.push(result.redirectUrl as string)
 		} else {

@@ -18,7 +18,7 @@ export enum MembershipApproval {
 // i will create a model.ts
 
 const api = axios.create({
-  baseURL: "https://bisho-backend-1.onrender.com/api",
+  baseURL: "http://5.75.243.13:8089/api",
     withCredentials: true, 
   headers: { "Content-Type": "application/json" },
 });

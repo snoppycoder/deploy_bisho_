@@ -60,16 +60,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // console.log("[AuthProvider] login() called with:", identifier);
     try {
       setLoading(true);
+      console.log("[AuthProvider] login() response user:", identifier);
       const { user } = await authAPI.login(identifier, password);
-      // console.log("[AuthProvider] login() response user:", user);
       console.log(user)
 
       if (user) {
         localStorage.setItem("user", JSON.stringify(user));
         setUser(user);
-        // console.log("[AuthProvider] User set:", user);
+        console.log("[AuthProvider] User set:", user);
        
-
         const params = new URLSearchParams(window.location.search);
         const callbackUrl = params.get("callbackUrl") || (user.role === "MEMBER" ? "/member" : "/dashboard");
 
