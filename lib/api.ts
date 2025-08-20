@@ -65,6 +65,7 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
 export const dashboardAPI = {
   getDashboardData: async () => {
     const response = await api.get(`/dashboard?t=${new Date().getTime()}`, {
