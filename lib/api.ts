@@ -1,5 +1,6 @@
 import { MemberData } from "@/app/models";
 import axios from "axios";
+import { response } from "express";
 import { string } from "prop-types";
 export interface LoanApprovalHistoryQuery {
   search?: string;
@@ -62,6 +63,18 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+export const dashboardAPI = {
+  getDashboardData: async () => {
+    const response = await api.get(`/dashboard?t=${new Date().getTime()}`, {
+      headers: {
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+      },
+    });
+    return response.data;
+  },
+};
 
 export const authAPI = {
   login: async (identifier: string, password: string) => {
@@ -94,12 +107,7 @@ export const authAPI = {
   }
  };
 
-export const dashboardAPI = {
-  getDashboardData: async () => {
-    const response = await api.get("/dashboard");
-    return response.data;
-  },
-};
+
 
 export const membersAPI = {
   getMember: async (etNumber: string) => {

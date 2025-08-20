@@ -57,7 +57,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
-import api from "@/lib/api"; // Import the unified Axios instance
+import api, { dashboardAPI, loanAPI } from "@/lib/api"; // Import the unified Axios instance
 import { useAuth } from "@/components/auth-provider"; // Import useAuth
 
 interface DashboardData {
@@ -158,14 +158,10 @@ export default function DashboardPage() {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get(`/dashboard?t=${new Date().getTime()}`, {
-        headers: {
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
-        },
-      });
-      setDashboardData(response.data);
+      const response:DashboardData = await dashboardAPI.getDashboardData();
+      
+      setDashboardData(response);
+      
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
     } finally {
