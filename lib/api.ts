@@ -5,21 +5,21 @@ import { string } from "prop-types";
 export interface LoanApprovalHistoryQuery {
   search?: string;
   status?: "ALL" | "PENDING" | "APPROVED" | "REJECTED";
-  fromDate?: string; 
-  toDate?: string;   
+  fromDate?: string;
+  toDate?: string;
   page?: number;
   pageSize?: number;
 }
 export enum MembershipApproval {
   APPROVED,
   PENDING,
-  REJECTED
+  REJECTED,
 }
 // i will create a model.ts
 
 const api = axios.create({
-  baseURL: "https://bisho-backend-1.onrender.com/api",
-    withCredentials: true, 
+  baseURL: "https://bisho-backend-3.onrender.com/api",
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -57,7 +57,9 @@ api.interceptors.response.use(
 
     if (isAuthError && isBrowser && isSafeToRedirect) {
       console.warn("[API] Unauthorized - redirecting to login");
-      window.location.href = `/login?callbackUrl=${encodeURIComponent(pathname)}`;
+      window.location.href = `/login?callbackUrl=${encodeURIComponent(
+        pathname
+      )}`;
     }
 
     return Promise.reject(error);
@@ -80,34 +82,28 @@ export const authAPI = {
   login: async (identifier: string, password: string) => {
     const response = await api.post("/auth/login", { identifier, password });
     // console.log("[authAPI.login] Raw response data:", response.data);
-    return { user: response.data.user }; 
+    return { user: response.data.user };
   },
 
   logout: async () => {
     const response = await api.post("/auth/logout");
     return response.data;
   },
-  session : async () => {
+  session: async () => {
     const response = await api.get("/auth/session");
     return response.data;
-
   },
-  signup : async (
-    data: {
+  signup: async (data: {
     name: string;
     email: string;
     phone: string;
     password: string;
     role?: string;
-  }
-  ) => {
+  }) => {
     const response = await api.post("/auth/register", data);
     return response.data;
-
-  }
- };
-
-
+  },
+};
 
 export const membersAPI = {
   getMember: async (etNumber: string) => {
@@ -120,48 +116,44 @@ export const membersAPI = {
     });
     return response.data;
   },
-   getMembers: async () => {
+  getMembers: async () => {
     const response = await api.get(`/members`);
     return response.data;
   },
   // this needs to be checked
- uploadKYC: async (formData: FormData) => {
-  const response = await api.post("/member/kyc-upload", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-  return response.data;
-},
- importMembers: async (members: MemberData[]) => {
-  
-      const response = await api.post("/members/import", members, {
-        headers: {
-          "Content-Type": "application/json", // just incase
-        },
-      });
-      return response.data;
-    },
+  uploadKYC: async (formData: FormData) => {
+    const response = await api.post("/member/kyc-upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return response.data;
+  },
+  importMembers: async (members: MemberData[]) => {
+    const response = await api.post("/members/import", members, {
+      headers: {
+        "Content-Type": "application/json", // just incase
+      },
+    });
+    return response.data;
+  },
 
-getWillingDeposits: async (
-  userId: number | undefined
-) => {
-  const response = await api.get(`/willing-deposit/requests?memberId=${userId}`);
-  return response.data;
-},
+  getWillingDeposits: async (userId: number | undefined) => {
+    const response = await api.get(
+      `/willing-deposit/requests?memberId=${userId}`
+    );
+    return response.data;
+  },
 
-willingDepositRequest: async (
-  data: {
+  willingDepositRequest: async (data: {
     amount: number;
     reason: string;
     paymentMethod: string;
     memberId: number | undefined;
-  }
-)=> {
-  const response = await api.post('/willing-deposit/request', data);
-  return response.data;
-}
-
+  }) => {
+    const response = await api.post("/willing-deposit/request", data);
+    return response.data;
+  },
 };
 
 export const membersLoanAPI = {
@@ -191,168 +183,170 @@ export const membersLoanAPI = {
 
     return response.data;
   },
-   loanEligibilityReq: async () => {
-    const response = await api.get('/members/loan-eligibility')
+  loanEligibilityReq: async () => {
+    const response = await api.get("/members/loan-eligibility");
     return response.data;
   },
 
   getLoans: async () => {
-    const response = await api.get('/members/loans');
+    const response = await api.get("/members/loans");
     return response.data;
-  }, 
+  },
 
-  getLoansById: async(
-    Id: string[] | string
-  ) => {
+  getLoansById: async (Id: string[] | string) => {
     const response = await api.get(`/members/loans/${Id}`);
     return response.data;
   },
 
   calculateLoan: async (data: {
-  loanAmount: number;
-  interestRate: number;
-  loanTerm: number;
-  repaymentFrequency: "monthly" | "quarterly" | "annually";
-}) => {
-  const response = await api.post("/loans/calculate", data);
-  return response.data;
-},
+    loanAmount: number;
+    interestRate: number;
+    loanTerm: number;
+    repaymentFrequency: "monthly" | "quarterly" | "annually";
+  }) => {
+    const response = await api.post("/loans/calculate", data);
+    return response.data;
+  },
 
-payLoanRepayment: async (
-  loanId: string | string[],
-  repaymentId: string | number,
-  data: {
-    amount: number;
-    reference?: string;
-    sourceType: string;
-  }
-) => {
-  const response = await api.post(
-    `/members/loans/${loanId}/repayments/${repaymentId}/pay`,
-    data
-  );
-  return response.data;
-}
+  payLoanRepayment: async (
+    loanId: string | string[],
+    repaymentId: string | number,
+    data: {
+      amount: number;
+      reference?: string;
+      sourceType: string;
+    }
+  ) => {
+    const response = await api.post(
+      `/members/loans/${loanId}/repayments/${repaymentId}/pay`,
+      data
+    );
+    return response.data;
+  },
 };
 
 export const membersSavingsAPI = {
-    getSavingsAndTransactions: async (
-      etNumber: string,
-      period: string,
-      type: string
-    ) => {
-      const response = await api.get(
-        `/members/${etNumber}/savings-and-transactions`,
-        { params: { period, type } } // axios handles query strings automatically
-      );
-      return response.data;
-    },
+  getSavingsAndTransactions: async (
+    etNumber: string,
+    period: string,
+    type: string
+  ) => {
+    const response = await api.get(
+      `/members/${etNumber}/savings-and-transactions`,
+      { params: { period, type } } // axios handles query strings automatically
+    );
+    return response.data;
+  },
 };
 export const loanAPI = {
-  getLoan : async() => {
-    const response = await api.get('/loans');
-    return response.data
+  getLoan: async () => {
+    const response = await api.get("/loans");
+    return response.data;
   },
- getLoanById: async (id: string[] | string) => {
-  let param: number;
+  getLoanById: async (id: string[] | string) => {
+    let param: number;
 
-  if (typeof id === "string") {
-    param = Number.parseInt(id, 10);
-  } else {
-    // join array into single string, then parse
-    param = Number.parseInt(id.join(""), 10);
-  }
+    if (typeof id === "string") {
+      param = Number.parseInt(id, 10);
+    } else {
+      // join array into single string, then parse
+      param = Number.parseInt(id.join(""), 10);
+    }
 
-  const response = await api.get(`/loans/${param}`);
-  return response.data;
-}
-,
- getLoanApprovalHistory: async (query: LoanApprovalHistoryQuery = {}) => {
-  const response = await api.get('/loans/approval-history', {
-    params: query
-  });
-  return response.data;
- },
- getPendingLoans : async () => {
-  const response = await api.get('/loans/pending');
-  return response.data;
-
- },
- getDisbursedLoan : async () => {
-  const response = await api.get("/loans/disbursed");
-  return response.data
-
- },
- approveLoans: async (id : number, status: string, comment: string) => {
-  const response = await api.post(`/loans/approve/${id}`, {status, comment});
-  return response.data;
- }
-}
-
-
-export const loanCalculator = {
-  getCalculated: async( loanAmount:number, interestRate:number, loanTerm:number, repaymentFrequency: "monthly" | "quarterly" | "annually") => {
-    const result = await api.post('/loans/calculate', {loanAmount, interestRate, loanTerm, repaymentFrequency});
-    return result.data;
-       
-  }
-}
-
-export const loanAgreement = {
-  getLoanAgreement: async()=>{
-    const response = await api.get('/loans/agreement-template', {
-      responseType : 'blob'
+    const response = await api.get(`/loans/${param}`);
+    return response.data;
+  },
+  getLoanApprovalHistory: async (query: LoanApprovalHistoryQuery = {}) => {
+    const response = await api.get("/loans/approval-history", {
+      params: query,
     });
     return response.data;
-  }
-}
+  },
+  getPendingLoans: async () => {
+    const response = await api.get("/loans/pending");
+    return response.data;
+  },
+  getDisbursedLoan: async () => {
+    const response = await api.get("/loans/disbursed");
+    return response.data;
+  },
+  approveLoans: async (id: number, status: string, comment: string) => {
+    const response = await api.post(`/loans/approve/${id}`, {
+      status,
+      comment,
+    });
+    return response.data;
+  },
+};
+
+export const loanCalculator = {
+  getCalculated: async (
+    loanAmount: number,
+    interestRate: number,
+    loanTerm: number,
+    repaymentFrequency: "monthly" | "quarterly" | "annually"
+  ) => {
+    const result = await api.post("/loans/calculate", {
+      loanAmount,
+      interestRate,
+      loanTerm,
+      repaymentFrequency,
+    });
+    return result.data;
+  },
+};
+
+export const loanAgreement = {
+  getLoanAgreement: async () => {
+    const response = await api.get("/loans/agreement-template", {
+      responseType: "blob",
+    });
+    return response.data;
+  },
+};
 
 export const loanDocument = {
-  getLoanDocumentById: async(
-    documentId: number
-  )=>{
+  getLoanDocumentById: async (documentId: number) => {
     const response = await api.get(`/member/loans/documents/${documentId}`);
     return response.data;
   },
 
-  getLoanDocumentByUrl: async(
-    URL: string
-  )=>{
-    const response = await api.get(`/members/documents/view?url=${encodeURIComponent(URL)}`, {
-       responseType: "blob",
-    });
+  getLoanDocumentByUrl: async (URL: string) => {
+    const response = await api.get(
+      `/members/documents/view?url=${encodeURIComponent(URL)}`,
+      {
+        responseType: "blob",
+      }
+    );
     return response.data;
   },
 
-  getLoanDocument: async() => {
-    const response = await api.get('/members/loans/documents');
+  getLoanDocument: async () => {
+    const response = await api.get("/members/loans/documents");
     return response.data;
-  }
-}
+  },
+};
 export const notificationAPI = {
   getNotifications: async () => {
-    const response = await api.get('/notifications');
-    return response.data;
-
-  }
-}
-export const membershipAPI = {
-  getMembershipRequests: async () => {
-    const response = await api.get('/membership/requests') ;
+    const response = await api.get("/notifications");
     return response.data;
   },
-  getMembershipRequestById: async (id : number, status : string ) => {
-    const response = await api.patch(`/membership/requests/${id}`, {status}) ;
+};
+export const membershipAPI = {
+  getMembershipRequests: async () => {
+    const response = await api.get("/membership/requests");
+    return response.data;
+  },
+  getMembershipRequestById: async (id: number, status: string) => {
+    const response = await api.patch(`/membership/requests/${id}`, { status });
     return response.data;
   },
   membershipRequest: async (data: FormData) => {
-  const response = await api.post('/membership/request', data, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-  });
-  return response.data;
-}
-
-
-}
+    const response = await api.post("/membership/request", data, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  },
+};
 
 export default api;
